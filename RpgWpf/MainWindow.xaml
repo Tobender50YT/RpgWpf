@@ -1,4 +1,4 @@
-﻿<Window x:Class="RPG_game.MainWindow"
+﻿<Window x:Class="RpgWpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="RPG WPF" Height="600" Width="900">
@@ -40,7 +40,7 @@
         </GroupBox>
 
         <!-- ========== RECHTS OBEN: SPIEL-INFOS / SPÄTER OPTIONALER STATUS ========== -->
-        <!-- Hier könntest du später Gegner-Infos, Runde, etc. anzeigen -->
+        <!-- Hier könnte man später Gegner-Infos, Runde, etc. anzeigen -->
         <GroupBox Header="Status"
                   Grid.Row="0" Grid.Column="1"
                   Margin="0,0,0,10">

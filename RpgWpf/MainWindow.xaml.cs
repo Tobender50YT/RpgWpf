@@ -5,7 +5,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace RPG_game
+namespace RpgWpf
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
