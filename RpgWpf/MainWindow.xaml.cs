@@ -1,16 +1,21 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
-using System.Windows.Media;
+using RpgWpf.GameLogic;
+using RpgWpf.GameCore;
 
 namespace RpgWpf
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         // ============================
-        //  Properties für die Bindings
+        //   Engine / Spiellogik
+        // ============================
+        private GameEngine _engine;
+
+        // ============================
+        //   Properties für Bindings
         // ============================
 
         private string _playerTag;
@@ -27,41 +32,44 @@ namespace RpgWpf
             set { _alter = value; OnPropertyChanged(nameof(Alter)); }
         }
 
-        private int _hp;
-        public int HP
+        private double _hp;
+        public double HP
         {
             get => _hp;
             set { _hp = value; OnPropertyChanged(nameof(HP)); }
         }
 
-        private int _maxHP;
-        public int MaxHP
+        private double _maxHP;
+        public double MaxHP
         {
             get => _maxHP;
             set { _maxHP = value; OnPropertyChanged(nameof(MaxHP)); }
         }
 
-        private int _attackDamage;
-        public int AttackDamage
+        private double _attackDamage;
+        public double AttackDamage
         {
             get => _attackDamage;
             set { _attackDamage = value; OnPropertyChanged(nameof(AttackDamage)); }
         }
 
-        private double _damageMultiplier;
-        public double DamageMultiplier
+        private int _damageMultiplier;
+        public int DamageMultiplier
         {
             get => _damageMultiplier;
             set { _damageMultiplier = value; OnPropertyChanged(nameof(DamageMultiplier)); }
         }
 
-        private int _specialAttackDamage;
-        public int SpecialAttackDamage
+        private double _specialAttackDamage;
+        public double SpecialAttackDamage
         {
             get => _specialAttackDamage;
             set { _specialAttackDamage = value; OnPropertyChanged(nameof(SpecialAttackDamage)); }
         }
 
+        /// <summary>
+        /// 0..1 für {0:P0} in XAML (z.B. 0.2 = 20%).
+        /// </summary>
         private double _specialProbability;
         public double SpecialProbability
         {
@@ -70,84 +78,142 @@ namespace RpgWpf
         }
 
         // ============================
-        //      Konstruktor
+        //   Konstruktor
         // ============================
         public MainWindow()
         {
             InitializeComponent();
 
-            // WICHTIG: DataContext setzen!
+            // DataContext für Bindings
             DataContext = this;
 
-            // Testwerte setzen, damit UI etwas zeigt
-            PlayerTag = "Spieler123";
-            Alter = 0;
+            // Engine mit Beispielwerten erzeugen
+            // (später können wir hier Eingabedialog einbauen)
+            _engine = new GameEngine(
+                vorname: "Tobi",
+                playerTag: "Tobender50",
+                alter: 20,
+                inventarGroesse: 24
+            );
 
-            HP = 0;
-            MaxHP = 0;
+            // UI einmal initial mit echten Werten füllen
+            SyncCharacterToUi();
 
-            AttackDamage = 0;
-            DamageMultiplier = 0;
-            SpecialAttackDamage = 0;
-            SpecialProbability = 0;
+            // GameLog füllen
+            GameLog.Text = "Willkommen in deinem WPF-RPG!\n\n";
+            GameLog.AppendText(_engine.GetStatusText() + "\n");
+            GameLog.ScrollToEnd();
+        }
 
-            // GameLog-Testtext
-            GameLog.Text = "Spiel wurde gestartet...\n" +
-                           "Dies ist dein zukünftiges Konsolenfeld.\n\n" +
-                           "Links oben siehst du die Charakterdaten.\n" +
-                           "Unten findest du die Steuerungsbuttons.\n\n" +
-                           "Alles funktioniert – jetzt können wir mit dem RPG starten!";
+        // ============================
+        //   Hilfsmethoden (UI Sync)
+        // ============================
+
+        private void SyncCharacterToUi()
+        {
+            var p = _engine.Player;
+
+            PlayerTag = p.PlayerTag;
+            Alter = p.Alter;
+            HP = p.HP;
+            MaxHP = p.MaxHP;
+            AttackDamage = p.GetAttackDamage();
+            DamageMultiplier = p.DamageMultiplier;
+            SpecialAttackDamage = p.GetSpecialAttackDamage();
+            SpecialProbability = p.SpecialAttackChancePercent / 100.0;
+        }
+
+        private void AppendLog(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            GameLog.AppendText(text);
+            if (!text.EndsWith("\n"))
+                GameLog.AppendText("\n");
+            GameLog.ScrollToEnd();
         }
 
         // ============================
         //   INotifyPropertyChanged
         // ============================
         public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string propName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-        }
 
+        private void OnPropertyChanged(string propertyName) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         // ============================
-        //   BUTTON HANDLER (leer)
+        //   Button-Handler
         // ============================
 
         private void EnterButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLog.AppendText("> Eingabe: " + InputBox.Text + "\n");
-            InputBox.Clear();
-            GameLog.ScrollToEnd();
+            if (!string.IsNullOrWhiteSpace(InputBox.Text))
+            {
+                AppendLog($"> {InputBox.Text}");
+                InputBox.Clear();
+            }
         }
 
         private void InventarButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLog.AppendText("[Inventar geöffnet]\n");
+            var inv = _engine.Player.Inventar;
+            var items = inv.Snapshot();
+
+            var sb = new StringBuilder();
+            sb.AppendLine();
+            sb.AppendLine($"Inventar ({inv.UsedSize}/{inv.MaxSize}):");
+
+            if (items.Count == 0)
+            {
+                sb.AppendLine("  (leer)");
+            }
+            else
+            {
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var item = items[i];
+                    sb.AppendLine($"  [{i}] {item.ItemName} (Größe {item.InventarGroesse})");
+                }
+            }
+
+            AppendLog(sb.ToString());
         }
 
         private void GoblinButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLog.AppendText("[Goblin angreifen]\n");
+            string log = _engine.AttackGoblin();
+            AppendLog("\n--- Kampf gegen Goblin ---");
+            AppendLog(log);
+            SyncCharacterToUi();
         }
 
         private void ElfeButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLog.AppendText("[Elfe angreifen]\n");
+            string log = _engine.AttackElfe();
+            AppendLog("\n--- Kampf gegen Elfe ---");
+            AppendLog(log);
+            SyncCharacterToUi();
         }
 
         private void WerwolfButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLog.AppendText("[Werwolf angreifen]\n");
+            string log = _engine.AttackWerwolf();
+            AppendLog("\n--- Kampf gegen Werwolf ---");
+            AppendLog(log);
+            SyncCharacterToUi();
         }
 
         private void PotionButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLog.AppendText("[Potion verwenden]\n");
+            // Vorläufig nur Platzhalter – echte Potion-Logik bauen wir später ein.
+            AppendLog("\n[Potion verwenden] – Logik folgt später.");
         }
 
         private void AdminButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLog.AppendText("[Admin-Menü aufrufen]\n");
+            // Vorläufig Platzhalter – später eigenes Admin-Fenster.
+            AppendLog("\n[Admin-Menü] – noch nicht implementiert.");
         }
 
         private void BeendenButton_Click(object sender, RoutedEventArgs e)
