@@ -2,10 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="RPG WPF"
-        Height="600"
-        Width="900"
-        MinWidth="900"
-        MinHeight="600">
+        Width="950"
+        Height="700"
+        MinWidth="950"
+        MinHeight="700">
 
     <Window.Resources>
 
@@ -174,9 +174,9 @@
                                            FontWeight="Bold"/>
                                 <TextBlock>
                                     <Run Text="HP: "/>
-                                    <Run Text="{Binding HP}"/>
+                                    <Run Text="{Binding HP, Mode=OneWay}"/>
                                     <Run Text=" / "/>
-                                    <Run Text="{Binding MaxHP}"/>
+                                    <Run Text="{Binding MaxHP, Mode=OneWay}"/>
                                 </TextBlock>
                             </StackPanel>
                         </Border>

@@ -75,8 +75,8 @@ namespace RpgWpf.GameLogic
 
             Enemies = new List<Entity>
             {
-                Goblin,
                 Slime,
+                Goblin,
                 Elfe,
                 Orc,
                 Werwolf,
