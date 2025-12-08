@@ -7,18 +7,21 @@ using RpgWpf.GameLogic;
 
 namespace RpgWpf
 {
+    /// <summary>
+    /// Hauptfenster des WPF-RPGs. Kapselt die Bindings zur GameEngine und die UI-Interaktionen.
+    /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         // ============================
         //   Engine / Spiellogik
         // ============================
-        private GameEngine _engine;
+        private readonly GameEngine _engine;
 
         // ============================
         //   Properties für Bindings
         // ============================
 
-        // --- Charakter-Daten (linke Box) ---
+        // --- Character-Box (links) ---
 
         public string PlayerTag
         {
@@ -63,7 +66,7 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// 0..1 für {0:P0} in XAML (z. B. 0.2 = 20 %).
+        /// Spezialangriffs-Wahrscheinlichkeit 0..1 (für {0:P0} in XAML).
         /// </summary>
         public double SpecialProbability
         {
@@ -71,7 +74,28 @@ namespace RpgWpf
             set { field = value; OnPropertyChanged(nameof(SpecialProbability)); }
         }
 
-        // --- Gegnerdaten (mittlere Box) ---
+        /// <summary> Aktuelles Spielerlevel. </summary>
+        public int Level
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(Level)); }
+        }
+
+        /// <summary> Aktuelle Erfahrungspunkte im aktuellen Level. </summary>
+        public int CurrentExp
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(CurrentExp)); }
+        }
+
+        /// <summary> Benötigte Erfahrungspunkte bis zum nächsten Level. </summary>
+        public int ExpToNextLevel
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(ExpToNextLevel)); }
+        }
+
+        // --- Enemy-Box (Mitte) ---
 
         public string CurrentEnemyName
         {
@@ -97,7 +121,7 @@ namespace RpgWpf
             set { field = value; OnPropertyChanged(nameof(CurrentEnemyAttack)); }
         }
 
-        // --- Shop-Anzeige (rechte Box) ---
+        // --- Shop-Box (rechts) ---
 
         public int Coins
         {
@@ -111,10 +135,10 @@ namespace RpgWpf
             set { field = value; OnPropertyChanged(nameof(Defense)); }
         }
 
-        // --- Gegnerliste (Enemies-Übersicht) ---
+        // --- Enemies-Übersicht (mittlere Zeile) ---
 
         /// <summary>
-        /// Liste aller sichtbaren Gegner für die Enemies-Übersicht.
+        /// Liste aller sichtbaren Gegner für EnemiesList.
         /// </summary>
         public List<Entity> Enemies
         {
@@ -139,7 +163,7 @@ namespace RpgWpf
         // --- Inventar-Anzeige (untere linke Box) ---
 
         /// <summary>
-        /// Sichtbare Liste der Inventar-Items des Spielers.
+        /// Liste der Items im Inventar des Spielers.
         /// </summary>
         public List<IInventarItem> InventoryItems
         {
@@ -150,11 +174,12 @@ namespace RpgWpf
         // ============================
         //   Konstruktor
         // ============================
+
         public MainWindow()
         {
             InitializeComponent();
 
-            // DataContext für Bindings
+            // DataContext für Bindings setzen
             DataContext = this;
 
             // Engine mit Beispielwerten erzeugen
@@ -165,27 +190,30 @@ namespace RpgWpf
                 inventarGroesse: 24
             );
 
-            // Gegnerliste aus der Engine übernehmen (inkl. Slime, Orc, Dragon)
+            // Gegnerliste aus der Engine übernehmen (inklusive Slime, Orc, Dragon usw.)
             Enemies = new List<Entity>(_engine.Enemies);
 
-            // Standard-Gegner auswählen (erster Eintrag in der Liste)
+            // Standard-Gegner auswählen (erster Eintrag in der Liste, falls vorhanden)
             SelectedEnemy = Enemies.Count > 0 ? Enemies[0] : null;
-
 
             // UI initial synchronisieren
             SyncCharacterToUi();
             SyncInventoryToUi();
             SyncCurrentEnemyToUi();
-            SyncMetaToUi();   // Coins + Defense aus der Engine übernehmen
+            SyncMetaToUi();
 
+            // Startmeldung in den Game-Log schreiben
+            AppendLog("Willkommen in deinem WPF-RPG!");
+            AppendLog(string.Empty);
+            AppendLog(_engine.GetStatusText());
         }
 
         // ============================
-        //   Hilfsmethoden (UI Sync)
+        //   Hilfsmethoden (UI-Sync)
         // ============================
 
         /// <summary>
-        /// Synchronisiert die grundlegenden Charakterdaten in die gebundenen Properties.
+        /// Synchronisiert grundlegende Charakterdaten (inkl. Level/EXP) in die Bindings.
         /// </summary>
         private void SyncCharacterToUi()
         {
@@ -199,10 +227,14 @@ namespace RpgWpf
             DamageMultiplier = p.DamageMultiplier;
             SpecialAttackDamage = p.GetSpecialAttackDamage();
             SpecialProbability = p.SpecialAttackChancePercent / 100.0;
+
+            Level = p.Level;
+            CurrentExp = p.CurrentExp;
+            ExpToNextLevel = p.ExpToNextLevel;
         }
 
         /// <summary>
-        /// Synchronisiert Coins und Defense aus der GameEngine in die gebundenen Properties.
+        /// Synchronisiert Coins und Defense in die Bindings.
         /// </summary>
         private void SyncMetaToUi()
         {
@@ -210,9 +242,8 @@ namespace RpgWpf
             Defense = _engine.Defense;
         }
 
-
         /// <summary>
-        /// Synchronisiert die Gegner-Anzeige (mittlere Box) anhand des aktuell ausgewählten Gegners.
+        /// Synchronisiert die Enemy-Box anhand des aktuell ausgewählten Gegners.
         /// </summary>
         private void SyncCurrentEnemyToUi()
         {
@@ -234,14 +265,30 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Aktualisiert die Inventar-Anzeige des Spielers.
+        /// Aktualisiert die Inventar-Anzeige auf Basis des Inventars der Engine.
         /// </summary>
         private void SyncInventoryToUi()
         {
             var inv = _engine.Player.Inventar;
-            var items = inv.Snapshot(); // Erwartet eine Liste von IInventarItem
-
+            var items = inv.Snapshot(); // erwartet eine Liste von IInventarItem
             InventoryItems = items;
+        }
+
+        /// <summary>
+        /// Hängt Text an das GameLog-Textfeld an (für den später sichtbaren Game-Log).
+        /// </summary>
+        private void AppendLog(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            GameLog.AppendText(text);
+            if (!text.EndsWith(Environment.NewLine))
+            {
+                GameLog.AppendText(Environment.NewLine);
+            }
+
+            GameLog.ScrollToEnd();
         }
 
         // ============================
@@ -272,44 +319,37 @@ namespace RpgWpf
                 return;
             }
 
-            string kampfText;
+            string kampfText = _engine.Attack(SelectedEnemy);
 
-            if (SelectedEnemy == _engine.Goblin)
-            {
-                kampfText = _engine.AttackGoblin();
-            }
-            else if (SelectedEnemy == _engine.Elfe)
-            {
-                kampfText = _engine.AttackElfe();
-            }
-            else if (SelectedEnemy == _engine.Werwolf)
-            {
-                kampfText = _engine.AttackWerwolf();
-            }
-            else
-            {
-                // Generische Behandlung für weitere Gegnertypen (Slime, Orc, Dragon, ...)
-                kampfText = _engine.Attack(SelectedEnemy);
-            }
+            // Kampfprotokoll in den Game-Log schreiben
+            AppendLog(string.Empty);
+            AppendLog($"--- Kampf gegen {SelectedEnemy.Name} ---");
+            AppendLog(kampfText);
 
             // UI nach dem Kampf aktualisieren
             SyncCharacterToUi();
             SyncCurrentEnemyToUi();
-            SyncMetaToUi();        // Coins / Defense
-            SyncInventoryToUi();   // Inventar (inkl. möglicher Drops)
+            SyncMetaToUi();
+            SyncInventoryToUi();
 
             // Listen neu zeichnen
             EnemiesList.Items.Refresh();
             InventoryList.Items.Refresh();
 
-            // kampfText kann später im Kampflog angezeigt werden
-            _ = kampfText;
+            // Niederlage-Popup anzeigen, falls der Spieler gestorben ist
+            if (kampfText.Contains("Du wurdest besiegt."))
+            {
+                MessageBox.Show(
+                    "Du bist gestorben. Deine Coins und dein Inventar wurden gelöscht.\nDu startest mit vollen HP neu.",
+                    "Niederlage",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
         }
 
-
         /// <summary>
-        /// Verwendet das im Inventar ausgewählte Item.
-        /// Die konkrete Logik für Heal-/Poison-Potions wird später ergänzt.
+        /// Verwendet das aktuell im Inventar ausgewählte Item.
+        /// HealPotion wirkt auf den Charakter, PoisonPotion auf den ausgewählten Gegner.
         /// </summary>
         private void UsePotionButton_Click(object sender, RoutedEventArgs e)
         {
@@ -325,13 +365,12 @@ namespace RpgWpf
                 return;
             }
 
-            // Zielgegner für PoisonPotion ist der aktuell ausgewählte Gegner.
-            // Für HealPotion wird dieses Ziel in der Engine ignoriert und stattdessen der Spieler geheilt.
             var target = SelectedEnemy;
-
             string result = _engine.UseInventoryItem(selectedItem, target);
 
-            // UI nach der Item-Verwendung aktualisieren
+            // Log-Eintrag und UI-Update
+            AppendLog($"[Item] {result}");
+
             SyncCharacterToUi();
             SyncCurrentEnemyToUi();
             SyncMetaToUi();
@@ -347,9 +386,8 @@ namespace RpgWpf
                 MessageBoxImage.Information);
         }
 
-
         /// <summary>
-        /// Öffnet später ein separates Admin-Menü.
+        /// Öffnet später ein separates Admin-Menü (derzeit nur Platzhalter).
         /// </summary>
         private void AdminMenuButton_Click(object sender, RoutedEventArgs e)
         {
