@@ -83,7 +83,7 @@ namespace RpgWpf.GameLogic
                 Dragon
             };
 
-            Coins = 0;
+            Coins = 10000;
             Defense = 0;
         }
 
