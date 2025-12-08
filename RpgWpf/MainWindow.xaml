@@ -133,17 +133,57 @@
 
             <!-- Shop-Box (rechts) -->
             <GroupBox Header="Shop"
-                      Grid.Column="2"
-                      Margin="0,0,0,5">
+          Grid.Column="2"
+          Margin="0,0,0,5">
                 <StackPanel Margin="10">
+
                     <!-- Anzeige der aktuellen Währung und Werte -->
                     <TextBlock Text="{Binding Coins, StringFormat=Coins: {0}}"/>
                     <Separator Margin="0,5,0,5"/>
                     <TextBlock Text="{Binding AttackDamage, StringFormat=Current attack: {0}}"/>
                     <TextBlock Text="{Binding Defense, StringFormat=Current defense: {0}}"/>
-                    <!-- Shop-Buttons können später hier ergänzt werden -->
+
+                    <Separator Margin="0,10,0,10"/>
+
+                    <!-- Upgrades -->
+                    <TextBlock Text="Upgrades"
+                   FontWeight="Bold"
+                   Margin="0,0,0,4"/>
+
+                    <Button Content="Increase attack (+2) – 20 Coins"
+                Margin="0,2,0,2"
+                Click="BuyAttackButton_Click"/>
+
+                    <Button Content="Increase defense (+1) – 15 Coins"
+                Margin="0,2,0,8"
+                Click="BuyDefenseButton_Click"/>
+
+                    <Separator Margin="0,4,0,8"/>
+
+                    <!-- Potions -->
+                    <TextBlock Text="Potions"
+                   FontWeight="Bold"
+                   Margin="0,0,0,4"/>
+
+                    <Button Content="Buy Heal Potion I – 12 Coins"
+                Margin="0,2,0,2"
+                Click="BuyHealPotion1Button_Click"/>
+
+                    <Button Content="Buy Heal Potion II – 20 Coins"
+                Margin="0,2,0,8"
+                Click="BuyHealPotion2Button_Click"/>
+
+                    <Button Content="Buy Poison Potion I – 10 Coins"
+                Margin="0,2,0,2"
+                Click="BuyPoisonPotion1Button_Click"/>
+
+                    <Button Content="Buy Poison Potion II – 18 Coins"
+                Margin="0,2,0,2"
+                Click="BuyPoisonPotion2Button_Click"/>
+
                 </StackPanel>
             </GroupBox>
+
         </Grid>
 
         <!-- ================================== -->

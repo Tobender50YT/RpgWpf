@@ -406,5 +406,134 @@ namespace RpgWpf
         {
             Close();
         }
+
+        // ============================
+        //   Shop-Button-Handler
+        // ============================
+
+        private void BuyAttackButton_Click(object sender, RoutedEventArgs e)
+        {
+            const int cost = 20;
+            const double increase = 2.0;
+
+            bool success = _engine.TryBuyAttackUpgrade(cost, increase, out string message);
+
+            AppendLog("[Shop] " + message);
+
+            // Bei Erfolg Character-Werte und Coins aktualisieren
+            if (success)
+            {
+                SyncCharacterToUi();
+                SyncMetaToUi();
+            }
+
+            MessageBox.Show(
+                message,
+                "Shop – Attack upgrade",
+                MessageBoxButton.OK,
+                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void BuyDefenseButton_Click(object sender, RoutedEventArgs e)
+        {
+            const int cost = 15;
+            const double increase = 1.0;
+
+            bool success = _engine.TryBuyDefenseUpgrade(cost, increase, out string message);
+
+            AppendLog("[Shop] " + message);
+
+            if (success)
+            {
+                SyncMetaToUi();
+            }
+
+            MessageBox.Show(
+                message,
+                "Shop – Defense upgrade",
+                MessageBoxButton.OK,
+                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void BuyHealPotion1Button_Click(object sender, RoutedEventArgs e)
+        {
+            bool success = _engine.TryBuyHealPotion(1, out string message);
+
+            AppendLog("[Shop] " + message);
+
+            if (success)
+            {
+                SyncMetaToUi();
+                SyncInventoryToUi();
+                InventoryList.Items.Refresh();
+            }
+
+            MessageBox.Show(
+                message,
+                "Shop – Heal Potion I",
+                MessageBoxButton.OK,
+                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void BuyHealPotion2Button_Click(object sender, RoutedEventArgs e)
+        {
+            bool success = _engine.TryBuyHealPotion(2, out string message);
+
+            AppendLog("[Shop] " + message);
+
+            if (success)
+            {
+                SyncMetaToUi();
+                SyncInventoryToUi();
+                InventoryList.Items.Refresh();
+            }
+
+            MessageBox.Show(
+                message,
+                "Shop – Heal Potion II",
+                MessageBoxButton.OK,
+                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void BuyPoisonPotion1Button_Click(object sender, RoutedEventArgs e)
+        {
+            bool success = _engine.TryBuyPoisonPotion(1, out string message);
+
+            AppendLog("[Shop] " + message);
+
+            if (success)
+            {
+                SyncMetaToUi();
+                SyncInventoryToUi();
+                InventoryList.Items.Refresh();
+            }
+
+            MessageBox.Show(
+                message,
+                "Shop – Poison Potion I",
+                MessageBoxButton.OK,
+                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void BuyPoisonPotion2Button_Click(object sender, RoutedEventArgs e)
+        {
+            bool success = _engine.TryBuyPoisonPotion(2, out string message);
+
+            AppendLog("[Shop] " + message);
+
+            if (success)
+            {
+                SyncMetaToUi();
+                SyncInventoryToUi();
+                InventoryList.Items.Refresh();
+            }
+
+            MessageBox.Show(
+                message,
+                "Shop – Poison Potion II",
+                MessageBoxButton.OK,
+                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
     }
 }
