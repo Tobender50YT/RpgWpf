@@ -1,36 +1,100 @@
-﻿using System.Text;
-using RpgWpf.GameCore;
+﻿using RpgWpf.GameCore;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
 
 namespace RpgWpf.GameLogic
 {
+    /// <summary>
+    /// Zentrale Spiel-Engine für das WPF-RPG. Kapselt Kampf, Drops, Coins und Shop-Logik.
+    /// </summary>
     public class GameEngine
     {
-        // --- Öffentliche Spielobjekte ---
+        private readonly Random _rng = new Random();
+
+        // ============================
+        //   Öffentliche Spielobjekte
+        // ============================
+
+        /// <summary> Spieler-Charakter mit Inventar und Spezialangriff. </summary>
         public Charakter Player { get; }
+
+        /// <summary> Bekannte Gegner-Instanzen. </summary>
         public Goblin Goblin { get; }
-        public Werwolf Werwolf { get; }
         public Elfe Elfe { get; }
+        public Werwolf Werwolf { get; }
 
-        // --- Zustände ---
-        public bool GoblinTot { get; private set; }
-        public bool WerwolfTot { get; private set; }
-        public bool ElfeTot { get; private set; }
-        public bool CharakterTot => Player.IsDead;
+        public Slime Slime { get; }
+        public Orc Orc { get; }
+        public Dragon Dragon { get; }
 
-        public bool AlleGegnerTot => GoblinTot && WerwolfTot && ElfeTot;
-        public bool GameOver => CharakterTot || AlleGegnerTot;
+        /// <summary>
+        /// Alle Gegner in einer Liste, z. B. für Bindings in der WPF-UI.
+        /// </summary>
+        public List<Entity> Enemies { get; }
 
-        private readonly string _adminPasswort = "123";
+        // ============================
+        //   Progress / Meta
+        // ============================
+
+        /// <summary> Aktuelle Coin-Anzahl des Spielers. </summary>
+        public int Coins { get; private set; }
+
+        /// <summary>
+        /// Verteidigungswert des Spielers. Wird vom eingehenden Schaden abgezogen (mindestens 0).
+        /// </summary>
+        public double Defense { get; private set; }
+
+        /// <summary>
+        /// Anzahl aller abgeschlossenen Kämpfe (eine "Runde" im Sinne: Kampf bis Spieler oder Gegner tot ist).
+        /// </summary>
+        public int FinishedBattles { get; private set; }
+
+        /// <summary>
+        /// Zählt, wie oft ein bestimmter Gegner bereits besiegt wurde.
+        /// </summary>
+        private readonly Dictionary<Entity, int> _defeatCounter = new Dictionary<Entity, int>();
+
+        private readonly string _adminPassword = "123";
+
+        // ============================
+        //   Konstruktor
+        // ============================
 
         public GameEngine(string vorname, string playerTag, int alter, int inventarGroesse)
         {
             Player = new Charakter(vorname, playerTag, alter, inventarGroesse);
+
             Goblin = new Goblin();
-            Werwolf = new Werwolf();
             Elfe = new Elfe();
+            Werwolf = new Werwolf();     // Annahme: Werwolf liegt ebenfalls in RpgWpf.GameCore
+
+            Slime = new Slime();
+            Orc = new Orc();
+            Dragon = new Dragon();
+
+            Enemies = new List<Entity>
+            {
+                Goblin,
+                Slime,
+                Elfe,
+                Orc,
+                Werwolf,
+                Dragon
+            };
+
+            Coins = 0;
+            Defense = 0;
         }
 
-        // --- Status-Text für die Charakter-Anzeige (links oben) ---
+        // ============================
+        //   Status-Helfer
+        // ============================
+
+        /// <summary>
+        /// Liefert eine mehrzeilige Zusammenfassung des Spielers inkl. Coins und Defense.
+        /// </summary>
         public string GetStatusText()
         {
             var sb = new StringBuilder();
@@ -42,93 +106,350 @@ namespace RpgWpf.GameLogic
             sb.AppendLine($"Attack damage: {Player.GetAttackDamage()}");
             sb.AppendLine($"Multiplikator (Special Attack): {Player.DamageMultiplier}x");
             sb.AppendLine($"Special Attack damage: {Player.GetSpecialAttackDamage()}");
-            sb.AppendLine($"Wahrscheinlichkeit (Special Attack): {Player.SpecialAttackChancePercent}%");
+            sb.AppendLine($"Special chance: {Player.SpecialAttackChancePercent}%");
+            sb.AppendLine();
+            sb.AppendLine($"Coins: {Coins}");
+            sb.AppendLine($"Defense: {Defense}");
 
             return sb.ToString();
         }
 
-        // Optional: Status für Gegner-Box (rechts)
-        public string GetEnemyStatusText(Entity gegner)
+        /// <summary>
+        /// Liefert eine kompakte Statusanzeige für einen Gegner.
+        /// </summary>
+        public string GetEnemyStatusText(Entity enemy)
         {
-            if (gegner == null) return string.Empty;
-            return $"{gegner.Name}\nHP: {gegner.HP} / {gegner.MaxHP}\nDamage: {gegner.GetAttackDamage()}";
+            if (enemy == null) return string.Empty;
+
+            var sb = new StringBuilder();
+            sb.AppendLine(enemy.Name);
+            sb.AppendLine($"HP: {enemy.HP} / {enemy.MaxHP}");
+            sb.AppendLine($"Attack: {enemy.GetAttackDamage()}");
+            sb.AppendLine($"Besiegt: {GetDefeatCount(enemy)}x");
+            return sb.ToString();
         }
 
-        // --- Öffentliche Kampf-Methoden fürs UI ---
+        /// <summary>
+        /// Gibt zurück, wie oft ein bestimmter Gegner besiegt wurde.
+        /// </summary>
+        public int GetDefeatCount(Entity enemy)
+        {
+            if (enemy == null) return 0;
+            return _defeatCounter.TryGetValue(enemy, out var count) ? count : 0;
+        }
+
+        /// <summary> True, wenn der Spieler keine HP mehr hat. </summary>
+        public bool IsGameOver => Player.IsDead;
+
+        /// <summary> Passwortprüfung für Admin-Funktionen. </summary>
+        public bool IsValidAdminPassword(string input) =>
+            string.Equals(input, _adminPassword, StringComparison.Ordinal);
+
+        // ============================
+        //   Kampf-API für das UI
+        // ============================
+
+        // Wrapper für bestehende Aufrufer (z. B. alte Click-Handler)
         public string AttackGoblin() => Attack(Goblin);
         public string AttackElfe() => Attack(Elfe);
         public string AttackWerwolf() => Attack(Werwolf);
 
-        // --- Zentrale Kampf-Logik (1 Runde) ---
-        private string Attack(Entity gegner)
+        /// <summary>
+        /// Führt eine komplette Kampfrunde gegen den angegebenen Gegner aus.
+        /// </summary>
+        public string Attack(Entity enemy)
         {
             var sb = new StringBuilder();
 
-            if (gegner == null)
+            if (enemy == null)
             {
                 sb.AppendLine("Kein Gegner ausgewählt.");
                 return sb.ToString();
             }
 
-            if (gegner.IsDead)
-            {
-                sb.AppendLine($"{gegner.Name} ist bereits besiegt!");
-                return sb.ToString();
-            }
-
             if (Player.IsDead)
             {
-                sb.AppendLine("Du wurdest bereits besiegt!");
+                sb.AppendLine("Der Charakter ist bereits besiegt.");
                 return sb.ToString();
             }
 
-            // Spezialangriff / normaler Angriff
+            // Ausgangszustand
+            sb.AppendLine($"Deine Leben: {Player.HP} / {Player.MaxHP}");
+            sb.AppendLine($"{enemy.Name} Leben: {enemy.HP} / {enemy.MaxHP}");
+            sb.AppendLine();
+
+            // Spieler greift an (ggf. Spezialangriff)
             bool special = Player.RollSpecialAttack();
-            double outDmg = special
+            double playerDamage = special
                 ? Player.GetSpecialAttackDamage()
                 : Player.GetAttackDamage();
 
-            // Vorherige HP anzeigen
-            sb.AppendLine($"Deine Leben: {Player.HP} / {Player.MaxHP}");
-            sb.AppendLine($"{gegner.Name} Leben: {gegner.HP} / {gegner.MaxHP}");
-            sb.AppendLine();
+            // Gegner greift zurück – Defense reduziert eingehenden Schaden (nicht unter 0)
+            double enemyBaseDamage = enemy.GetAttackDamage();
+            double enemyDamage = Math.Max(0, enemyBaseDamage - Defense);
 
-            // Schaden anwenden
-            bool gegnerTot = gegner.TakeDamage(outDmg);
-            bool charakterTot = Player.TakeDamage(gegner.GetAttackDamage());
+            bool enemyDied = enemy.TakeDamage(playerDamage);
+            bool playerDied = Player.TakeDamage(enemyDamage);
 
-            // Text zu Schaden / Spezialangriff
             if (special)
             {
-                sb.AppendLine($"SPEZIALATTACKE x{Player.DamageMultiplier} DAMAGE!!!");
+                sb.AppendLine($"Spezialangriff x{Player.DamageMultiplier} damage!");
             }
 
-            sb.AppendLine($"Du hast {outDmg} Schaden gemacht!");
-            sb.AppendLine($"{gegner.Name} hat {gegner.GetAttackDamage()} Schaden gemacht!");
+            sb.AppendLine($"Du hast {playerDamage} Schaden gemacht.");
+            if (enemyDamage > 0)
+            {
+                sb.AppendLine($"{enemy.Name} hat {enemyDamage} Schaden gemacht.");
+            }
+            else
+            {
+                sb.AppendLine($"{enemy.Name} konnte keinen Schaden verursachen (Defense).");
+            }
             sb.AppendLine();
 
             // Neue HP anzeigen
             sb.AppendLine($"Deine Leben: {Player.HP} / {Player.MaxHP}");
-            sb.AppendLine($"{gegner.Name} Leben: {gegner.HP} / {gegner.MaxHP}");
+            sb.AppendLine($"{enemy.Name} Leben: {enemy.HP} / {enemy.MaxHP}");
 
-            // Flags setzen, wenn jemand gestorben ist
-            if (gegnerTot)
+            // Abschluss einer "Runde" im Sinn von: Kampf bis zum Tod
+            if (enemyDied || playerDied)
             {
-                sb.AppendLine();
-                sb.AppendLine($"{gegner.Name} wurde besiegt!");
+                FinishedBattles++;
 
-                if (gegner == Goblin) GoblinTot = true;
-                if (gegner == Elfe) ElfeTot = true;
-                if (gegner == Werwolf) WerwolfTot = true;
-            }
+                if (enemyDied)
+                {
+                    HandleEnemyDefeated(enemy, sb);
+                }
 
-            if (charakterTot)
-            {
-                sb.AppendLine();
-                sb.AppendLine("Du wurdest besiegt!");
+                if (playerDied)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("Du wurdest besiegt.");
+                }
             }
 
             return sb.ToString();
+        }
+
+        // ============================
+        //   Potions / Inventar
+        // ============================
+
+        /// <summary>
+        /// Verwendet ein ausgewähltes Inventar-Item.
+        /// HealPotion wird auf den Spieler angewendet.
+        /// PoisonPotion benötigt ein Ziel (Gegner).
+        /// </summary>
+        public string UseInventoryItem(IInventarItem item, Entity target)
+        {
+            if (item == null)
+            {
+                return "Es wurde kein Item ausgewählt.";
+            }
+
+            var inv = Player.Inventar;
+
+            // HealPotion: automatisch auf den Spieler
+            if (item is HealPotion heal)
+            {
+                bool used = heal.useItem(Player);
+                if (!used)
+                {
+                    return "HealPotion hatte keinen Effekt (HP vermutlich bereits voll).";
+                }
+
+                inv.Remove(heal);
+                return "HealPotion wurde auf den Charakter angewendet.";
+            }
+
+            // PoisonPotion: Ziel-Gegner erforderlich
+            if (item is PoisonPotion poison)
+            {
+                if (target == null)
+                {
+                    return "Für PoisonPotion muss ein Ziel ausgewählt werden.";
+                }
+
+                bool used = poison.useItem(target);
+                if (!used)
+                {
+                    return "PoisonPotion konnte nicht angewendet werden.";
+                }
+
+                inv.Remove(poison);
+                return $"{target.Name} wurde durch eine PoisonPotion verletzt.";
+            }
+
+            // Generische Items: Standardverhalten – wenn kein Ziel angegeben ist, auf den Spieler
+            bool consumed = item.useItem(target ?? Player);
+            if (consumed)
+            {
+                inv.Remove(item);
+                return $"{item.ItemName} wurde verwendet.";
+            }
+
+            return $"{item.ItemName} hatte keinen Effekt.";
+        }
+
+        // ============================
+        //   Shop-Logik (Attack / Defense)
+        // ============================
+
+        /// <summary>
+        /// Versucht, einen Angriff-Upgrade zu kaufen. Kosten werden in Coins abgezogen.
+        /// </summary>
+        public bool TryBuyAttackUpgrade(int cost, double attackIncrease, out string message)
+        {
+            if (!CheckCoins(cost, out message))
+            {
+                return false;
+            }
+
+            Coins -= cost;
+
+            // Basis-Angriffsschaden wird erhöht
+            double newBaseAttack = Player.GetAttackDamage() + attackIncrease;
+            Player.SetBaseAttack(newBaseAttack);
+
+            message = $"Attack damage wurde um {attackIncrease} erhöht (neu: {Player.GetAttackDamage()}).";
+            return true;
+        }
+
+        /// <summary>
+        /// Versucht, einen Defense-Upgrade zu kaufen. Kosten werden in Coins abgezogen.
+        /// </summary>
+        public bool TryBuyDefenseUpgrade(int cost, double defenseIncrease, out string message)
+        {
+            if (!CheckCoins(cost, out message))
+            {
+                return false;
+            }
+
+            Coins -= cost;
+            Defense += defenseIncrease;
+
+            message = $"Defense wurde um {defenseIncrease} erhöht (neu: {Defense}).";
+            return true;
+        }
+
+        private bool CheckCoins(int cost, out string message)
+        {
+            if (cost <= 0)
+            {
+                message = "Kosten müssen größer als 0 sein.";
+                return false;
+            }
+
+            if (Coins < cost)
+            {
+                message = $"Es werden {cost} Coins benötigt (aktuell: {Coins}).";
+                return false;
+            }
+
+            message = string.Empty;
+            return true;
+        }
+
+        // ============================
+        //   Interne Helfer (Drops etc.)
+        // ============================
+
+        private void HandleEnemyDefeated(Entity enemy, StringBuilder sb)
+        {
+            sb.AppendLine();
+            sb.AppendLine($"{enemy.Name} wurde besiegt.");
+
+            // Kill-Zähler für diesen Gegner
+            if (_defeatCounter.ContainsKey(enemy))
+            {
+                _defeatCounter[enemy]++;
+            }
+            else
+            {
+                _defeatCounter[enemy] = 1;
+            }
+
+            // Coin-Reward abhängig vom Gegnertyp
+            int reward = GetCoinReward(enemy);
+            if (reward > 0)
+            {
+                Coins += reward;
+                sb.AppendLine($"+{reward} Coins erhalten (insgesamt: {Coins}).");
+            }
+
+            // Potion-Drop
+            var drop = CreateRandomDrop(enemy);
+            if (drop != null)
+            {
+                if (drop is HealPotion heal)
+                {
+                    bool used = heal.useItem(Player);
+                    if (used)
+                    {
+                        sb.AppendLine("HealPotion wurde automatisch auf den Charakter angewendet.");
+                    }
+                    else
+                    {
+                        bool stored = Player.Inventar.Add(heal);
+                        if (stored)
+                        {
+                            sb.AppendLine("HealPotion wurde dem Inventar hinzugefügt.");
+                        }
+                        else
+                        {
+                            sb.AppendLine("Inventar ist voll, HealPotion wurde verworfen.");
+                        }
+                    }
+                }
+                else
+                {
+                    bool stored = Player.Inventar.Add(drop);
+                    if (stored)
+                    {
+                        sb.AppendLine($"{drop.ItemName} wurde dem Inventar hinzugefügt.");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"Inventar ist voll, {drop.ItemName} wurde verworfen.");
+                    }
+                }
+            }
+
+            // Monster respawnt mit vollen Leben
+            enemy.SetHP(enemy.MaxHP);
+        }
+
+        private int GetCoinReward(Entity enemy)
+        {
+            if (enemy is Slime) return 5;
+            if (enemy is Goblin) return 10;
+            if (enemy is Elfe) return 20;
+            if (enemy is Orc) return 35;
+            if (enemy is Werwolf) return 50;
+            if (enemy is Dragon) return 80;
+
+            return 10;
+        }
+
+
+        /// <summary>
+        /// Erstellt einen zufälligen Potion-Drop. Rückgabewert kann null sein, wenn nichts droppt.
+        /// </summary>
+        private IInventarItem CreateRandomDrop(Entity enemy)
+        {
+            // Drop-Chance: ca. 70 %
+            if (_rng.NextDouble() > 0.7)
+                return null;
+
+            int level = _rng.Next(1, 4); // ItemGroesse 1..3
+            bool isHeal = _rng.Next(2) == 0;
+
+            if (isHeal)
+            {
+                return new HealPotion(ItemGroesse: level);
+            }
+
+            return new PoisonPotion(ItemGroesse: level);
         }
     }
 }

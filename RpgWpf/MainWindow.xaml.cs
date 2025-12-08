@@ -165,25 +165,19 @@ namespace RpgWpf
                 inventarGroesse: 24
             );
 
-            // Gegnerliste initial aufbauen
-            Enemies = new List<Entity>
-            {
-                _engine.Goblin,
-                _engine.Elfe,
-                _engine.Werwolf
-            };
+            // Gegnerliste aus der Engine übernehmen (inkl. Slime, Orc, Dragon)
+            Enemies = new List<Entity>(_engine.Enemies);
 
-            // Standard-Gegner auswählen
-            SelectedEnemy = _engine.Goblin;
+            // Standard-Gegner auswählen (erster Eintrag in der Liste)
+            SelectedEnemy = Enemies.Count > 0 ? Enemies[0] : null;
+
 
             // UI initial synchronisieren
             SyncCharacterToUi();
             SyncInventoryToUi();
             SyncCurrentEnemyToUi();
+            SyncMetaToUi();   // Coins + Defense aus der Engine übernehmen
 
-            // Platzhalter für Shop-Werte (Coins/Defense kommen später aus der Engine)
-            Coins = 0;
-            Defense = 0;
         }
 
         // ============================
@@ -206,6 +200,16 @@ namespace RpgWpf
             SpecialAttackDamage = p.GetSpecialAttackDamage();
             SpecialProbability = p.SpecialAttackChancePercent / 100.0;
         }
+
+        /// <summary>
+        /// Synchronisiert Coins und Defense aus der GameEngine in die gebundenen Properties.
+        /// </summary>
+        private void SyncMetaToUi()
+        {
+            Coins = _engine.Coins;
+            Defense = _engine.Defense;
+        }
+
 
         /// <summary>
         /// Synchronisiert die Gegner-Anzeige (mittlere Box) anhand des aktuell ausgewählten Gegners.
@@ -284,20 +288,24 @@ namespace RpgWpf
             }
             else
             {
-                // Vorläufig nur Platzhalter – weitere Gegnertypen werden später eingebaut
-                kampfText = "Angriffe auf diesen Gegnertyp sind noch nicht implementiert.";
+                // Generische Behandlung für weitere Gegnertypen (Slime, Orc, Dragon, ...)
+                kampfText = _engine.Attack(SelectedEnemy);
             }
 
-            // Charakter- und Gegnerdaten nach der Runde aktualisieren
+            // UI nach dem Kampf aktualisieren
             SyncCharacterToUi();
             SyncCurrentEnemyToUi();
+            SyncMetaToUi();        // Coins / Defense
+            SyncInventoryToUi();   // Inventar (inkl. möglicher Drops)
 
-            // Gegnerübersicht aktualisieren (HP-Anzeige neu zeichnen)
+            // Listen neu zeichnen
             EnemiesList.Items.Refresh();
+            InventoryList.Items.Refresh();
 
-            // kampfText kann später im UI angezeigt werden (z. B. eigenes Log-Feld)
+            // kampfText kann später im Kampflog angezeigt werden
             _ = kampfText;
         }
+
 
         /// <summary>
         /// Verwendet das im Inventar ausgewählte Item.
@@ -317,13 +325,28 @@ namespace RpgWpf
                 return;
             }
 
-            // Vorläufig nur Platzhalter – echte Potion-Logik wird später eingebaut
+            // Zielgegner für PoisonPotion ist der aktuell ausgewählte Gegner.
+            // Für HealPotion wird dieses Ziel in der Engine ignoriert und stattdessen der Spieler geheilt.
+            var target = SelectedEnemy;
+
+            string result = _engine.UseInventoryItem(selectedItem, target);
+
+            // UI nach der Item-Verwendung aktualisieren
+            SyncCharacterToUi();
+            SyncCurrentEnemyToUi();
+            SyncMetaToUi();
+            SyncInventoryToUi();
+
+            EnemiesList.Items.Refresh();
+            InventoryList.Items.Refresh();
+
             MessageBox.Show(
-                $"Die Verwendung von '{selectedItem.ItemName}' wird später implementiert.",
-                "Noch nicht implementiert",
+                result,
+                "Item verwendet",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
+
 
         /// <summary>
         /// Öffnet später ein separates Admin-Menü.
