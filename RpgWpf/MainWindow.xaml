@@ -1,111 +1,189 @@
 ﻿<Window x:Class="RpgWpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="RPG WPF" Height="600" Width="900">
+        Title="RPG WPF" Height="500" Width="900" MinWidth="900" MinHeight="500">
+    
+    
+    
     <Grid Margin="10">
-        <!-- Spalten: links Charakter, rechts Spielbereich -->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-
-        <!-- Zeilen: oben Status/Log, unten Aktionen/Eingabe -->
+        <!-- Hauptaufteilung: 
+             Row 0: drei gleich große Felder (Character / Enemy / Shop)
+             Row 1: Gegner-Übersicht (alle Monster)
+             Row 2: unten links Inventory, unten rechts Buttons -->
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- ========== LINKER BEREICH: CHARAKTER-INFOS ========== -->
-        <GroupBox Header="Charakter"
-                  Grid.Row="0" Grid.Column="0"
-                  Margin="0,0,10,10">
-            <StackPanel Margin="10">
-                <TextBlock Text="{Binding PlayerTag, StringFormat=Playertag: {0}}" />
-                <TextBlock Text="{Binding Alter, StringFormat=Alter: {0}}" Margin="0,5,0,0"/>
-
-                <Separator Margin="0,5,0,5"/>
-
-                <TextBlock Text="{Binding HP, StringFormat=Health Points: {0}}" />
-                <TextBlock Text="{Binding MaxHP, StringFormat=Max. Health: {0}}" />
-                <TextBlock Text="{Binding AttackDamage, StringFormat=Attack damage: {0}}" Margin="0,5,0,0"/>
-
-                <Separator Margin="0,5,0,5"/>
-
-                <TextBlock Text="{Binding DamageMultiplier, StringFormat=Multiplikator (Special): {0}x}" />
-                <TextBlock Text="{Binding SpecialAttackDamage, StringFormat=Special Attack damage: {0}}" />
-                <TextBlock Text="{Binding SpecialProbability, StringFormat=Wahrscheinlichkeit (Special): {0:P0}}" />
-            </StackPanel>
-        </GroupBox>
-
-        <!-- ========== RECHTS OBEN: SPIEL-INFOS / SPÄTER OPTIONALER STATUS ========== -->
-        <GroupBox Header="Status"
-                  Grid.Row="0" Grid.Column="1"
-                  Margin="0,0,0,10">
-            <StackPanel Margin="10">
-                <TextBlock Text="Hier können später Gegner-Infos, Runde usw. stehen." />
-            </StackPanel>
-        </GroupBox>
-
-        <!-- ========== MITTE RECHTS: GAME-LOG (Konsolentext) ========== -->
-        <TextBox x:Name="GameLog"
-                 Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                 Margin="0,0,0,10"
-                 IsReadOnly="True"
-                 AcceptsReturn="True"
-                 VerticalScrollBarVisibility="Auto"
-                 TextWrapping="Wrap"
-                 FontFamily="Consolas"
-                 FontSize="14" />
-
-        <!-- ========== UNTEN: EINGABE + MENÜ-AKTIONEN ========== -->
-        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+        <!-- ======================= -->
+        <!--       Row 0: Top        -->
+        <!-- ======================= -->
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Eingabezeile wie Konsolenbefehl -->
-            <StackPanel Orientation="Horizontal"
-                        Grid.Column="0"
-                        VerticalAlignment="Center">
-                <TextBlock Text="Befehl:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <TextBox x:Name="InputBox"
-                         Width="250"
-                         FontFamily="Consolas"
-                         FontSize="14"
-                         Margin="0,0,10,0"/>
-                <Button Content="Enter"
-                        Width="80"
-                        Click="EnterButton_Click"/>
-            </StackPanel>
+            <!-- Character-Box (links) -->
+            <GroupBox Header="Character"
+                      Margin="0,0,10,5"
+                      Grid.Column="0">
+                <StackPanel Margin="10">
+                    <!-- Bindings wie bisher, nur englische Beschriftung -->
+                    <TextBlock Text="{Binding PlayerTag, StringFormat=Player tag: {0}}"/>
+                    <TextBlock Text="{Binding Alter, StringFormat=Age: {0}}" Margin="0,5,0,0"/>
 
-            <!-- Menü-Buttons aus AnfangsText -->
-            <StackPanel Orientation="Horizontal"
-                        Grid.Column="1"
-                        HorizontalAlignment="Right">
-                <Button Content="Inventar"
-                        Margin="5,0"
-                        Click="InventarButton_Click"/>
-                <Button Content="Goblin angreifen"
-                        Margin="5,0"
-                        Click="GoblinButton_Click"/>
-                <Button Content="Elfe angreifen"
-                        Margin="5,0"
-                        Click="ElfeButton_Click"/>
-                <Button Content="Werwolf angreifen"
-                        Margin="5,0"
-                        Click="WerwolfButton_Click"/>
-                <Button Content="Potion verwenden"
-                        Margin="5,0"
-                        Click="PotionButton_Click"/>
-                <Button Content="Admin"
-                        Margin="5,0"
-                        Click="AdminButton_Click"/>
-                <Button Content="Beenden"
-                        Margin="5,0"
-                        Click="BeendenButton_Click"/>
+                    <Separator Margin="0,5,0,5"/>
+
+                    <TextBlock Text="{Binding HP, StringFormat=Health Points: {0}}"/>
+                    <TextBlock Text="{Binding MaxHP, StringFormat=Max. Health: {0}}"/>
+                    <TextBlock Text="{Binding AttackDamage, StringFormat=Attack damage: {0}}" Margin="0,5,0,0"/>
+
+                    <Separator Margin="0,5,0,5"/>
+
+                    <TextBlock Text="{Binding DamageMultiplier, StringFormat=Multiplier (Special): {0}x}"/>
+                    <TextBlock Text="{Binding SpecialAttackDamage, StringFormat=Special attack damage: {0}}"/>
+                    <TextBlock Text="{Binding SpecialProbability, StringFormat=Special chance: {0:P0}}"/>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Enemy-Box (Mitte) -->
+            <GroupBox Header="Enemy"
+                      Margin="0,0,10,5"
+                      Grid.Column="1">
+                <StackPanel Margin="10">
+                    <!-- Diese Properties bauen wir später in MainWindow / GameEngine ein -->
+                    <TextBlock Text="{Binding CurrentEnemyName, StringFormat=Name: {0}}" />
+                    <TextBlock Text="{Binding CurrentEnemyHP, StringFormat=HP: {0}}" Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding CurrentEnemyMaxHP, StringFormat=Max. HP: {0}}"/>
+                    <!-- Optional: später z. B. Attack/Defense anzeigen -->
+                    <TextBlock Text="{Binding CurrentEnemyAttack, StringFormat=Attack: {0}}" Margin="0,5,0,0"/>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Shop-Box (rechts) -->
+            <GroupBox Header="Shop"
+                      Margin="0,0,0,5"
+                      Grid.Column="2">
+                <StackPanel Margin="10">
+                    <!-- Anzeige – Logik und echte Werte kommen später -->
+                    <TextBlock Text="{Binding Coins, StringFormat=Coins: {0}}"/>
+                    <Separator Margin="0,5,0,5"/>
+                    <TextBlock Text="{Binding AttackDamage, StringFormat=Current attack: {0}}"/>
+                    <TextBlock Text="{Binding Defense, StringFormat=Current defense: {0}}"/>
+                    <!-- Später können hier z. B. Shop-Beschreibungen / Preise etc. angezeigt werden -->
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+
+        <!-- ================================== -->
+        <!--       Row 1: Enemy-Übersicht       -->
+        <!-- ================================== -->
+        <GroupBox Header="Enemies"
+                  Grid.Row="1"
+                  Margin="0,0,0,5">
+            <!-- Horizontale Liste aller Gegner mit Name + HP/MaxHP -->
+            <ListBox x:Name="EnemiesList"
+                     ItemsSource="{Binding Enemies}"
+                     SelectedItem="{Binding SelectedEnemy, Mode=TwoWay}"
+                     BorderThickness="0">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="8"
+                                Margin="4"
+                                CornerRadius="4"
+                                BorderBrush="Gray"
+                                BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                <TextBlock>
+                                    <Run Text="HP: "/>
+                                    <Run Text="{Binding HP}"/>
+                                    <Run Text=" / "/>
+                                    <Run Text="{Binding MaxHP}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </GroupBox>
+
+        <!-- ================================== -->
+        <!--       Row 2: Inventory + Buttons   -->
+        <!-- ================================== -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Inventory (links unten) -->
+            <GroupBox Header="Inventory"
+                      Grid.Column="0"
+                      Margin="0,0,10,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <!-- Liste aller Items im Inventar -->
+                    <ListBox x:Name="InventoryList"
+                             ItemsSource="{Binding InventoryItems}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding ItemName}" />
+                                    <TextBlock Text=" ("/>
+                                    <TextBlock Text="{Binding InventarGroesse}"/>
+                                    <TextBlock Text=")" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </GroupBox>
+
+            <!-- Buttons (rechts unten) -->
+            <StackPanel Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Margin="0,0,0,0">
+                <Button x:Name="AttackButton"
+                        Content="Attack"
+                        Margin="0,0,0,5"
+                        Height="30"/>
+                <Button x:Name="UsePotionButton"
+                        Content="Use potion"
+                        Margin="0,0,0,5"
+                        Height="30"/>
+                <Separator Margin="0,5,0,5"/>
+                <Button x:Name="AdminMenuButton"
+                        Content="Admin menu"
+                        Margin="0,0,0,5"
+                        Height="30"/>
+                <Button x:Name="ExitButton"
+                        Content="Exit game"
+                        Height="30"/>
             </StackPanel>
         </Grid>
+
+        <!-- ================================== -->
+        <!--   Versteckte Reste für alten Code  -->
+        <!--   (damit MainWindow.xaml.cs weiter -->
+        <!--    kompiliert, obwohl kein Log    -->
+        <!--    mehr sichtbar ist)             -->
+        <!-- ================================== -->
+        <Grid Visibility="Collapsed">
+            <TextBox x:Name="GameLog"/>
+            <TextBox x:Name="InputBox"/>
+        </Grid>
+
     </Grid>
 </Window>
