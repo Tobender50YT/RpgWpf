@@ -1,15 +1,61 @@
 ﻿<Window x:Class="RpgWpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="RPG WPF" Height="500" Width="900" MinWidth="900" MinHeight="500">
-    
-    
-    
+        Title="RPG WPF"
+        Height="600"
+        Width="900"
+        MinWidth="900"
+        MinHeight="600">
+
+    <Window.Resources>
+
+        <!-- Gemeinsamer Stil für alle GroupBoxen (Rahmen und Überschriftgröße) -->
+        <Style TargetType="GroupBox">
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+
+        <!-- Gemeinsamer Stil für alle Buttons (abgerundete Ecken, Farben, Hover-Zustände) -->
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Background" Value="#FF4A90E2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinWidth" Value="180"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="8"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF1E6CC7"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#FF0F4C94"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
+
+    <!-- Hauptlayout: 
+         Row 0: Character / Enemy / Shop
+         Row 1: Übersicht aller Enemies
+         Row 2: Inventory links, Buttons rechts -->
     <Grid Margin="10">
-        <!-- Hauptaufteilung: 
-             Row 0: drei gleich große Felder (Character / Enemy / Shop)
-             Row 1: Gegner-Übersicht (alle Monster)
-             Row 2: unten links Inventory, unten rechts Buttons -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -17,7 +63,7 @@
         </Grid.RowDefinitions>
 
         <!-- ======================= -->
-        <!--       Row 0: Top        -->
+        <!--        Row 0: Top       -->
         <!-- ======================= -->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
@@ -28,18 +74,19 @@
 
             <!-- Character-Box (links) -->
             <GroupBox Header="Character"
-                      Margin="0,0,10,5"
-                      Grid.Column="0">
+                      Grid.Column="0"
+                      Margin="0,0,10,5">
                 <StackPanel Margin="10">
-                    <!-- Bindings wie bisher, nur englische Beschriftung -->
                     <TextBlock Text="{Binding PlayerTag, StringFormat=Player tag: {0}}"/>
-                    <TextBlock Text="{Binding Alter, StringFormat=Age: {0}}" Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding Alter, StringFormat=Age: {0}}"
+                               Margin="0,5,0,0"/>
 
                     <Separator Margin="0,5,0,5"/>
 
                     <TextBlock Text="{Binding HP, StringFormat=Health Points: {0}}"/>
                     <TextBlock Text="{Binding MaxHP, StringFormat=Max. Health: {0}}"/>
-                    <TextBlock Text="{Binding AttackDamage, StringFormat=Attack damage: {0}}" Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding AttackDamage, StringFormat=Attack damage: {0}}"
+                               Margin="0,5,0,0"/>
 
                     <Separator Margin="0,5,0,5"/>
 
@@ -51,29 +98,27 @@
 
             <!-- Enemy-Box (Mitte) -->
             <GroupBox Header="Enemy"
-                      Margin="0,0,10,5"
-                      Grid.Column="1">
+                      Grid.Column="1"
+                      Margin="0,0,10,5">
                 <StackPanel Margin="10">
-                    <!-- Diese Properties bauen wir später in MainWindow / GameEngine ein -->
-                    <TextBlock Text="{Binding CurrentEnemyName, StringFormat=Name: {0}}" />
-                    <TextBlock Text="{Binding CurrentEnemyHP, StringFormat=HP: {0}}" Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding CurrentEnemyName, StringFormat=Name: {0}}"/>
+                    <TextBlock Text="{Binding CurrentEnemyHP, StringFormat=HP: {0}}"
+                               Margin="0,5,0,0"/>
                     <TextBlock Text="{Binding CurrentEnemyMaxHP, StringFormat=Max. HP: {0}}"/>
-                    <!-- Optional: später z. B. Attack/Defense anzeigen -->
-                    <TextBlock Text="{Binding CurrentEnemyAttack, StringFormat=Attack: {0}}" Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding CurrentEnemyAttack, StringFormat=Attack: {0}}"
+                               Margin="0,5,0,0"/>
                 </StackPanel>
             </GroupBox>
 
             <!-- Shop-Box (rechts) -->
             <GroupBox Header="Shop"
-                      Margin="0,0,0,5"
-                      Grid.Column="2">
+                      Grid.Column="2"
+                      Margin="0,0,0,5">
                 <StackPanel Margin="10">
-                    <!-- Anzeige – Logik und echte Werte kommen später -->
                     <TextBlock Text="{Binding Coins, StringFormat=Coins: {0}}"/>
                     <Separator Margin="0,5,0,5"/>
                     <TextBlock Text="{Binding AttackDamage, StringFormat=Current attack: {0}}"/>
                     <TextBlock Text="{Binding Defense, StringFormat=Current defense: {0}}"/>
-                    <!-- Später können hier z. B. Shop-Beschreibungen / Preise etc. angezeigt werden -->
                 </StackPanel>
             </GroupBox>
         </Grid>
@@ -84,7 +129,7 @@
         <GroupBox Header="Enemies"
                   Grid.Row="1"
                   Margin="0,0,0,5">
-            <!-- Horizontale Liste aller Gegner mit Name + HP/MaxHP -->
+            <!-- Horizontale Liste aller Gegner mit Name und HP/MaxHP -->
             <ListBox x:Name="EnemiesList"
                      ItemsSource="{Binding Enemies}"
                      SelectedItem="{Binding SelectedEnemy, Mode=TwoWay}"
@@ -102,7 +147,8 @@
                                 BorderBrush="Gray"
                                 BorderThickness="1">
                             <StackPanel>
-                                <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Name}"
+                                           FontWeight="Bold"/>
                                 <TextBlock>
                                     <Run Text="HP: "/>
                                     <Run Text="{Binding HP}"/>
@@ -133,16 +179,16 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <!-- Liste aller Items im Inventar -->
+
                     <ListBox x:Name="InventoryList"
                              ItemsSource="{Binding InventoryItems}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding ItemName}" />
+                                    <TextBlock Text="{Binding ItemName}"/>
                                     <TextBlock Text=" ("/>
                                     <TextBlock Text="{Binding InventarGroesse}"/>
-                                    <TextBlock Text=")" />
+                                    <TextBlock Text=")"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -152,34 +198,38 @@
 
             <!-- Buttons (rechts unten) -->
             <StackPanel Grid.Column="1"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Top"
-                        Margin="0,0,0,0">
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
                 <Button x:Name="AttackButton"
                         Content="Attack"
-                        Margin="0,0,0,5"
-                        Height="30"/>
+                        Width="200"
+                        Margin="0,8,0,8"/>
+
                 <Button x:Name="UsePotionButton"
                         Content="Use potion"
-                        Margin="0,0,0,5"
-                        Height="30"/>
-                <Separator Margin="0,5,0,5"/>
+                        Width="200"
+                        Margin="0,8,0,8"/>
+
+                <!-- Optische Trennung zwischen Kampf- und Verwaltungsfunktionen -->
+                <Separator Margin="0,12,0,12"
+                           Width="200"
+                           Height="3"
+                           Background="Gray"/>
+
                 <Button x:Name="AdminMenuButton"
                         Content="Admin menu"
-                        Margin="0,0,0,5"
-                        Height="30"/>
+                        Width="200"
+                        Margin="0,8,0,8"/>
+
                 <Button x:Name="ExitButton"
                         Content="Exit game"
-                        Height="30"/>
+                        Width="200"
+                        Margin="0,8,0,8"/>
             </StackPanel>
         </Grid>
 
-        <!-- ================================== -->
-        <!--   Versteckte Reste für alten Code  -->
-        <!--   (damit MainWindow.xaml.cs weiter -->
-        <!--    kompiliert, obwohl kein Log    -->
-        <!--    mehr sichtbar ist)             -->
-        <!-- ================================== -->
+        <!-- Versteckte Controls für bestehenden Code-Behind (GameLog / InputBox) -->
         <Grid Visibility="Collapsed">
             <TextBox x:Name="GameLog"/>
             <TextBox x:Name="InputBox"/>
