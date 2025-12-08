@@ -9,10 +9,10 @@
 
     <Window.Resources>
 
-        <!-- Gemeinsamer Stil für alle GroupBoxen (Rahmen und Überschriftgröße) -->
+        <!-- Gemeinsamer Stil für alle GroupBoxen (Rahmen, Innenabstand, Überschriftgröße) -->
         <Style TargetType="GroupBox">
             <Setter Property="Padding" Value="5"/>
-            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderThickness" Value="3"/>
             <Setter Property="FontSize" Value="16"/>
         </Style>
 
@@ -51,7 +51,7 @@
 
     </Window.Resources>
 
-    <!-- Hauptlayout: 
+    <!-- Hauptlayout:
          Row 0: Character / Enemy / Shop
          Row 1: Übersicht aller Enemies
          Row 2: Inventory links, Buttons rechts -->
@@ -73,9 +73,12 @@
             </Grid.ColumnDefinitions>
 
             <!-- Character-Box (links) -->
-            <GroupBox Header="Character"
-                      Grid.Column="0"
+            <GroupBox Grid.Column="0"
                       Margin="0,0,10,5">
+                <GroupBox.Header>
+                    <TextBlock Text="Character"/>
+                </GroupBox.Header>
+
                 <StackPanel Margin="10">
                     <TextBlock Text="{Binding PlayerTag, StringFormat=Player tag: {0}}"/>
                     <TextBlock Text="{Binding Alter, StringFormat=Age: {0}}"
