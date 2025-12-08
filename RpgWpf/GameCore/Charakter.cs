@@ -3,7 +3,7 @@
 namespace RpgWpf.GameCore
 {
     /// <summary>
-    /// Spieler Charakter inkl. Inventar und Spezialangriff Logik.
+    /// Spieler Charakter inkl. Inventar, Spezialangriff-Logik und Level/Erfahrungssystem.
     /// </summary>
     public class Charakter : Entity
     {
@@ -22,6 +22,19 @@ namespace RpgWpf.GameCore
         /// </summary>
         public int SpecialAttackChancePercent { get; set; } = 20; // vormals "5" via Next(5)==0
 
+        // ============================
+        //   Level- und Erfahrungssystem
+        // ============================
+
+        /// <summary> Aktuelles Spielerlevel (mindestens 1). </summary>
+        public int Level { get; private set; }
+
+        /// <summary> Aktuell gesammelte Erfahrungspunkte im aktuellen Level. </summary>
+        public int CurrentExp { get; private set; }
+
+        /// <summary> Benötigte Erfahrungspunkte bis zum nächsten Level. </summary>
+        public int ExpToNextLevel { get; private set; }
+
         public Charakter(string vorname, string playerTag, int alter, int invSize)
             : base(playerTag)
         {
@@ -33,6 +46,11 @@ namespace RpgWpf.GameCore
             // Startwerte
             SetBaseAttack(5);
             DamageMultiplier = 5;
+
+            // Level-/EXP-Startwerte
+            Level = 1;
+            CurrentExp = 0;
+            ExpToNextLevel = 100;
         }
 
         /// <summary> Berechnet den Schaden einer möglichen Spezialattacke. </summary>
@@ -52,7 +70,48 @@ namespace RpgWpf.GameCore
             DamageMultiplier = Math.Max(1, value);
         }
 
+        /// <summary>
+        /// Fügt Erfahrungspunkte hinzu und prüft auf Level-Ups.
+        /// Bei mindestens einem Level-Up werden die Lebenspunkte vollständig aufgefüllt.
+        /// </summary>
+        /// <param name="amount">Anzahl der vergebenen Erfahrungspunkte.</param>
+        /// <returns>True, wenn mindestens ein Level-Up stattgefunden hat.</returns>
+        public bool GainExp(int amount)
+        {
+            if (amount <= 0)
+            {
+                return false;
+            }
+
+            CurrentExp += amount;
+            bool leveledUp = false;
+
+            // Mehrere Level-Ups hintereinander ermöglichen (bei vielen EXP auf einmal)
+            while (CurrentExp >= ExpToNextLevel)
+            {
+                CurrentExp -= ExpToNextLevel;
+                Level++;
+                leveledUp = true;
+
+                // Einfache Progression: nächstes Level benötigt ca. 30 % mehr EXP
+                ExpToNextLevel = (int)(ExpToNextLevel * 1.3);
+                if (ExpToNextLevel < 1)
+                {
+                    ExpToNextLevel = 1;
+                }
+            }
+
+            if (leveledUp)
+            {
+                // HP nach Level-Up vollständig auffüllen
+                SetHP(MaxHP);
+            }
+
+            return leveledUp;
+        }
+
         // ==== Abwärtskompatible Wrapper ====
+
         [Obsolete("Nutze stattdessen Vorname")] public string getVorname() => Vorname;
         [Obsolete("Nutze stattdessen PlayerTag")] public string getplayer_tag() => PlayerTag;
         [Obsolete("Nutze stattdessen Alter")] public int getAlter() => Alter;
