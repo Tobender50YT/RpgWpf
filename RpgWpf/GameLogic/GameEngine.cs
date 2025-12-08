@@ -460,41 +460,18 @@ namespace RpgWpf.GameLogic
                 }
             }
 
-            // Potion-Drop
+            // Potion-Drop – alle Potions immer ins Inventar
             var drop = CreateRandomDrop(enemy);
             if (drop != null)
             {
-                if (drop is HealPotion heal)
+                bool stored = Player.Inventar.Add(drop);
+                if (stored)
                 {
-                    bool used = heal.useItem(Player);
-                    if (used)
-                    {
-                        sb.AppendLine("HealPotion wurde automatisch auf den Charakter angewendet.");
-                    }
-                    else
-                    {
-                        bool stored = Player.Inventar.Add(heal);
-                        if (stored)
-                        {
-                            sb.AppendLine("HealPotion wurde dem Inventar hinzugefügt.");
-                        }
-                        else
-                        {
-                            sb.AppendLine("Inventar ist voll, HealPotion wurde verworfen.");
-                        }
-                    }
+                    sb.AppendLine($"{drop.ItemName} wurde dem Inventar hinzugefügt.");
                 }
                 else
                 {
-                    bool stored = Player.Inventar.Add(drop);
-                    if (stored)
-                    {
-                        sb.AppendLine($"{drop.ItemName} wurde dem Inventar hinzugefügt.");
-                    }
-                    else
-                    {
-                        sb.AppendLine($"Inventar ist voll, {drop.ItemName} wurde verworfen.");
-                    }
+                    sb.AppendLine($"Inventar ist voll, {drop.ItemName} wurde verworfen.");
                 }
             }
 
