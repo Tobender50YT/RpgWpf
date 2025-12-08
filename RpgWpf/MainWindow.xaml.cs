@@ -18,63 +18,55 @@ namespace RpgWpf
         //   Properties für Bindings
         // ============================
 
-        private string _playerTag;
         public string PlayerTag
         {
-            get => _playerTag;
-            set { _playerTag = value; OnPropertyChanged(nameof(PlayerTag)); }
+            get;
+            set { field = value; OnPropertyChanged(nameof(PlayerTag)); }
         }
 
-        private int _alter;
         public int Alter
         {
-            get => _alter;
-            set { _alter = value; OnPropertyChanged(nameof(Alter)); }
+            get;
+            set { field = value; OnPropertyChanged(nameof(Alter)); }
         }
 
-        private double _hp;
         public double HP
         {
-            get => _hp;
-            set { _hp = value; OnPropertyChanged(nameof(HP)); }
+            get;
+            set { field = value; OnPropertyChanged(nameof(HP)); }
         }
 
-        private double _maxHP;
         public double MaxHP
         {
-            get => _maxHP;
-            set { _maxHP = value; OnPropertyChanged(nameof(MaxHP)); }
+            get;
+            set { field = value; OnPropertyChanged(nameof(MaxHP)); }
         }
 
-        private double _attackDamage;
         public double AttackDamage
         {
-            get => _attackDamage;
-            set { _attackDamage = value; OnPropertyChanged(nameof(AttackDamage)); }
+            get;
+            set { field = value; OnPropertyChanged(nameof(AttackDamage)); }
         }
 
-        private int _damageMultiplier;
         public int DamageMultiplier
         {
-            get => _damageMultiplier;
-            set { _damageMultiplier = value; OnPropertyChanged(nameof(DamageMultiplier)); }
+            get;
+            set { field = value; OnPropertyChanged(nameof(DamageMultiplier)); }
         }
 
-        private double _specialAttackDamage;
         public double SpecialAttackDamage
         {
-            get => _specialAttackDamage;
-            set { _specialAttackDamage = value; OnPropertyChanged(nameof(SpecialAttackDamage)); }
+            get;
+            set { field = value; OnPropertyChanged(nameof(SpecialAttackDamage)); }
         }
 
         /// <summary>
         /// 0..1 für {0:P0} in XAML (z.B. 0.2 = 20%).
         /// </summary>
-        private double _specialProbability;
         public double SpecialProbability
         {
-            get => _specialProbability;
-            set { _specialProbability = value; OnPropertyChanged(nameof(SpecialProbability)); }
+            get;
+            set { field = value; OnPropertyChanged(nameof(SpecialProbability)); }
         }
 
         // ============================
@@ -88,7 +80,6 @@ namespace RpgWpf
             DataContext = this;
 
             // Engine mit Beispielwerten erzeugen
-            // (später können wir hier Eingabedialog einbauen)
             _engine = new GameEngine(
                 vorname: "Tobi",
                 playerTag: "Tobender50",
@@ -206,13 +197,13 @@ namespace RpgWpf
 
         private void PotionButton_Click(object sender, RoutedEventArgs e)
         {
-            // Vorläufig nur Platzhalter – echte Potion-Logik bauen wir später ein.
+            // Vorläufig nur Platzhalter – echte Potion-Logik wird später eingebaut
             AppendLog("\n[Potion verwenden] – Logik folgt später.");
         }
 
         private void AdminButton_Click(object sender, RoutedEventArgs e)
         {
-            // Vorläufig Platzhalter – später eigenes Admin-Fenster.
+            // Vorläufig Platzhalter – später eigenes Admin-Fenster
             AppendLog("\n[Admin-Menü] – noch nicht implementiert.");
         }
 
