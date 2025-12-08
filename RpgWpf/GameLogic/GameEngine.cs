@@ -5,7 +5,7 @@ namespace RpgWpf.GameLogic
 {
     public class GameEngine
     {
-        // --- Öffentliche Spielobjekte (fürs UI lesbar) ---
+        // --- Öffentliche Spielobjekte ---
         public Charakter Player { get; }
         public Goblin Goblin { get; }
         public Werwolf Werwolf { get; }
@@ -20,7 +20,6 @@ namespace RpgWpf.GameLogic
         public bool AlleGegnerTot => GoblinTot && WerwolfTot && ElfeTot;
         public bool GameOver => CharakterTot || AlleGegnerTot;
 
-        // später fürs Admin-Panel nutzbar
         private readonly string _adminPasswort = "123";
 
         public GameEngine(string vorname, string playerTag, int alter, int inventarGroesse)
@@ -83,7 +82,7 @@ namespace RpgWpf.GameLogic
                 return sb.ToString();
             }
 
-            // Spezialangriff / normaler Angriff wie in deiner refactorten Version
+            // Spezialangriff / normaler Angriff
             bool special = Player.RollSpecialAttack();
             double outDmg = special
                 ? Player.GetSpecialAttackDamage()
