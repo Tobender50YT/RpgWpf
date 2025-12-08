@@ -1,13 +1,12 @@
 ﻿using RpgWpf.GameCore;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
 
 namespace RpgWpf.GameLogic
 {
     /// <summary>
-    /// Zentrale Spiel-Engine für das WPF-RPG. Kapselt Kampf, Drops, Coins und Shop-Logik.
+    /// Zentrale Spiel-Engine für das WPF-RPG. Kapselt Kampf, Drops, Coins, Level/EXP und Shop-Logik.
     /// </summary>
     public class GameEngine
     {
@@ -17,7 +16,7 @@ namespace RpgWpf.GameLogic
         //   Öffentliche Spielobjekte
         // ============================
 
-        /// <summary> Spieler-Charakter mit Inventar und Spezialangriff. </summary>
+        /// <summary> Spieler-Charakter mit Inventar und Spezialangriff-Logik. </summary>
         public Charakter Player { get; }
 
         /// <summary> Bekannte Gegner-Instanzen. </summary>
@@ -68,7 +67,7 @@ namespace RpgWpf.GameLogic
 
             Goblin = new Goblin();
             Elfe = new Elfe();
-            Werwolf = new Werwolf();     // Annahme: Werwolf liegt ebenfalls in RpgWpf.GameCore
+            Werwolf = new Werwolf();
 
             Slime = new Slime();
             Orc = new Orc();
@@ -93,7 +92,7 @@ namespace RpgWpf.GameLogic
         // ============================
 
         /// <summary>
-        /// Liefert eine mehrzeilige Zusammenfassung des Spielers inkl. Coins und Defense.
+        /// Liefert eine mehrzeilige Zusammenfassung des Spielers inkl. Level, EXP, Coins und Defense.
         /// </summary>
         public string GetStatusText()
         {
@@ -101,6 +100,8 @@ namespace RpgWpf.GameLogic
 
             sb.AppendLine($"Playertag: {Player.PlayerTag}");
             sb.AppendLine($"Alter: {Player.Alter}");
+            sb.AppendLine($"Level: {Player.Level}");
+            sb.AppendLine($"EXP: {Player.CurrentExp} / {Player.ExpToNextLevel}");
             sb.AppendLine();
             sb.AppendLine($"Health Points: {Player.HP} / {Player.MaxHP}");
             sb.AppendLine($"Attack damage: {Player.GetAttackDamage()}");
@@ -211,7 +212,7 @@ namespace RpgWpf.GameLogic
             sb.AppendLine($"Deine Leben: {Player.HP} / {Player.MaxHP}");
             sb.AppendLine($"{enemy.Name} Leben: {enemy.HP} / {enemy.MaxHP}");
 
-            // Abschluss einer "Runde" im Sinn von: Kampf bis zum Tod
+            // Abschluss einer Kampf-Runde (bis Spieler oder Gegner tot ist)
             if (enemyDied || playerDied)
             {
                 FinishedBattles++;
@@ -225,6 +226,7 @@ namespace RpgWpf.GameLogic
                 {
                     sb.AppendLine();
                     sb.AppendLine("Du wurdest besiegt.");
+                    HandlePlayerDefeated(sb);
                 }
             }
 
@@ -292,7 +294,7 @@ namespace RpgWpf.GameLogic
         }
 
         // ============================
-        //   Shop-Logik (Attack / Defense)
+        //   Shop-Logik (Attack / Defense / Potions)
         // ============================
 
         /// <summary>
@@ -332,6 +334,74 @@ namespace RpgWpf.GameLogic
             return true;
         }
 
+        /// <summary>
+        /// Versucht, eine HealPotion mit gegebener Stärke (1 oder 2) zu kaufen.
+        /// </summary>
+        public bool TryBuyHealPotion(int strength, out string message)
+        {
+            int cost;
+            if (strength == 1)
+                cost = 12;
+            else if (strength == 2)
+                cost = 20;
+            else
+            {
+                message = "Nur HealPotions der Stufe 1 oder 2 können gekauft werden.";
+                return false;
+            }
+
+            if (!CheckCoins(cost, out message))
+            {
+                return false;
+            }
+
+            Coins -= cost;
+            var potion = new HealPotion(ItemGroesse: strength);
+            bool stored = Player.Inventar.Add(potion);
+            if (!stored)
+            {
+                message = "Inventar ist voll, die Potion konnte nicht hinzugefügt werden.";
+                return false;
+            }
+
+            message = $"HealPotion (Stufe {strength}) wurde gekauft und dem Inventar hinzugefügt.";
+            return true;
+        }
+
+        /// <summary>
+        /// Versucht, eine PoisonPotion mit gegebener Stärke (1 oder 2) zu kaufen.
+        /// </summary>
+        public bool TryBuyPoisonPotion(int strength, out string message)
+        {
+            int cost;
+            if (strength == 1)
+                cost = 10;
+            else if (strength == 2)
+                cost = 18;
+            else
+            {
+                message = "Nur PoisonPotions der Stufe 1 oder 2 können gekauft werden.";
+                return false;
+            }
+
+            if (!CheckCoins(cost, out message))
+            {
+                return false;
+            }
+
+            Coins -= cost;
+            var potion = new PoisonPotion(ItemGroesse: strength);
+            bool stored = Player.Inventar.Add(potion);
+            if (!stored)
+            {
+                message = "Inventar ist voll, die Potion konnte nicht hinzugefügt werden.";
+                return false;
+            }
+
+            message = $"PoisonPotion (Stufe {strength}) wurde gekauft und dem Inventar hinzugefügt.";
+            return true;
+        }
+
         private bool CheckCoins(int cost, out string message)
         {
             if (cost <= 0)
@@ -351,7 +421,7 @@ namespace RpgWpf.GameLogic
         }
 
         // ============================
-        //   Interne Helfer (Drops etc.)
+        //   Interne Helfer (Drops, Sieg, Niederlage)
         // ============================
 
         private void HandleEnemyDefeated(Entity enemy, StringBuilder sb)
@@ -375,6 +445,19 @@ namespace RpgWpf.GameLogic
             {
                 Coins += reward;
                 sb.AppendLine($"+{reward} Coins erhalten (insgesamt: {Coins}).");
+            }
+
+            // EXP-Reward
+            int exp = GetExpReward(enemy);
+            if (exp > 0)
+            {
+                bool leveledUp = Player.GainExp(exp);
+                sb.AppendLine($"+{exp} EXP erhalten (Level {Player.Level}, {Player.CurrentExp}/{Player.ExpToNextLevel} EXP).");
+
+                if (leveledUp)
+                {
+                    sb.AppendLine("Level-Up! HP wurden vollständig aufgefüllt.");
+                }
             }
 
             // Potion-Drop
@@ -415,6 +498,9 @@ namespace RpgWpf.GameLogic
                 }
             }
 
+            // Sieg-Regeneration (nur bei Sieg, nicht bei Niederlage)
+            ApplyVictoryRegeneration(sb);
+
             // Monster respawnt mit vollen Leben
             enemy.SetHP(enemy.MaxHP);
         }
@@ -431,6 +517,62 @@ namespace RpgWpf.GameLogic
             return 10;
         }
 
+        /// <summary>
+        /// Gibt die EXP-Belohnung für einen besiegten Gegner zurück.
+        /// </summary>
+        private int GetExpReward(Entity enemy)
+        {
+            if (enemy is Slime) return 5;
+            if (enemy is Goblin) return 10;
+            if (enemy is Elfe) return 20;
+            if (enemy is Orc) return 35;
+            if (enemy is Werwolf) return 50;
+            if (enemy is Dragon) return 80;
+
+            return 10;
+        }
+
+        /// <summary>
+        /// Regeneration nach einem gewonnenen Kampf (z. B. 10 % der MaxHP).
+        /// </summary>
+        private void ApplyVictoryRegeneration(StringBuilder sb)
+        {
+            double healAmount = Player.MaxHP * 0.1; // 10 %
+            double before = Player.HP;
+            double after = Math.Min(Player.MaxHP, Player.HP + healAmount);
+
+            Player.SetHP(after);
+
+            double actualHeal = after - before;
+            if (actualHeal > 0)
+            {
+                sb.AppendLine($"Regeneration nach Sieg: +{actualHeal} HP (jetzt {Player.HP}/{Player.MaxHP}).");
+            }
+        }
+
+        /// <summary>
+        /// Behandelt eine Niederlage des Spielers: Coins und Inventar werden gelöscht, HP werden aufgefüllt.
+        /// Gegner bleiben unverändert.
+        /// </summary>
+        private void HandlePlayerDefeated(StringBuilder sb)
+        {
+            // Coins löschen
+            Coins = 0;
+
+            // Inventar leeren
+            var inv = Player.Inventar;
+            var items = inv.Snapshot();
+            foreach (var item in items)
+            {
+                inv.Remove(item);
+            }
+
+            // HP wiederherstellen
+            Player.SetHP(Player.MaxHP);
+
+            sb.AppendLine("Alle Coins und das komplette Inventar wurden gelöscht.");
+            sb.AppendLine("Deine HP wurden vollständig wiederhergestellt.");
+        }
 
         /// <summary>
         /// Erstellt einen zufälligen Potion-Drop. Rückgabewert kann null sein, wenn nichts droppt.
