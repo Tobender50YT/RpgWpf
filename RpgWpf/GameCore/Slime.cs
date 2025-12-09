@@ -6,7 +6,7 @@
     public class Slime : Entity
     {
         public Slime(string name = "Slime")
-            : base(name, startHP: 120, baseAttack: 2)
+            : base(name, startHP: 150, baseAttack: 2)
         {
         }
     }
