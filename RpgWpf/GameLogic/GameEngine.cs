@@ -336,8 +336,13 @@ namespace RpgWpf.GameLogic
             // MaxHP des Spielers erhöhen
             Player.SetMaxHP(Player.MaxHP + hpIncrease);
 
-            // Nach einem Health-Upgrade werden die HP vollständig aufgefüllt
-            Player.SetHP(Player.MaxHP);
+            // Nur um den Upgrade-Betrag heilen – aber nicht über MaxHP
+            double healedHp = Player.HP + hpIncrease;
+            if (healedHp > Player.MaxHP)
+                healedHp = Player.MaxHP;
+
+            Player.SetHP(healedHp);
+
 
             message = $"Max health wurde um {hpIncrease} erhöht (jetzt: {Player.MaxHP}).";
             return true;
