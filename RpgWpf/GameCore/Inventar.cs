@@ -14,7 +14,7 @@ namespace RpgWpf.GameCore
         public int MaxSize { get; }
         public int UsedSize { get; private set; }
 
-        public Inventar(int groesse = 24)
+        public Inventar(int groesse = 20)
         {
             MaxSize = Math.Max(1, groesse);
         }

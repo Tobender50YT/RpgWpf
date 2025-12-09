@@ -123,16 +123,13 @@ namespace RpgWpf
 
         // --- Shop-Box (rechts) ---
 
+        /// <summary>
+        /// Aktuelle Coin-Anzahl für die Shop-Anzeige.
+        /// </summary>
         public int Coins
         {
             get;
             set { field = value; OnPropertyChanged(nameof(Coins)); }
-        }
-
-        public double Defense
-        {
-            get;
-            set { field = value; OnPropertyChanged(nameof(Defense)); }
         }
 
         // --- Enemies-Übersicht (mittlere Zeile) ---
@@ -187,7 +184,7 @@ namespace RpgWpf
                 vorname: "Tobi",
                 playerTag: "Tobender50",
                 alter: 20,
-                inventarGroesse: 24
+                inventarGroesse: 100
             );
 
             // Gegnerliste aus der Engine übernehmen (inklusive Slime, Orc, Dragon usw.)
@@ -234,12 +231,11 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Synchronisiert Coins und Defense in die Bindings.
+        /// Synchronisiert Meta-Daten (Coins) in die Bindings.
         /// </summary>
         private void SyncMetaToUi()
         {
             Coins = _engine.Coins;
-            Defense = _engine.Defense;
         }
 
         /// <summary>
@@ -265,17 +261,17 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Aktualisiert die Inventar-Anzeige auf Basis des Inventars der Engine.
+        /// Aktualisiert die Inventar-Anzeige auf Basis des Inventars aus der Engine.
         /// </summary>
         private void SyncInventoryToUi()
         {
             var inv = _engine.Player.Inventar;
-            var items = inv.Snapshot(); // erwartet eine Liste von IInventarItem
+            var items = inv.Snapshot();
             InventoryItems = items;
         }
 
         /// <summary>
-        /// Hängt Text an das GameLog-Textfeld an (für den später sichtbaren Game-Log).
+        /// Hängt Text an das GameLog-Textfeld an (sichtbarer Game-Log in der UI).
         /// </summary>
         private void AppendLog(string text)
         {
@@ -301,7 +297,7 @@ namespace RpgWpf
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         // ============================
-        //   Button-Handler
+        //   Button-Handler (Kampf / Admin)
         // ============================
 
         /// <summary>
@@ -340,7 +336,7 @@ namespace RpgWpf
             if (kampfText.Contains("Du wurdest besiegt."))
             {
                 MessageBox.Show(
-                    "Du bist gestorben. Deine Coins und dein Inventar wurden gelöscht.\nDu startest mit vollen HP neu.",
+                    "Der Charakter ist gestorben. Coins und Inventar wurden gelöscht.\nDer Neustart erfolgt mit vollen HP.",
                     "Niederlage",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -411,6 +407,9 @@ namespace RpgWpf
         //   Shop-Button-Handler
         // ============================
 
+        /// <summary>
+        /// Kauft ein Attack-Upgrade (+2 Damage) für 20 Coins.
+        /// </summary>
         private void BuyAttackButton_Click(object sender, RoutedEventArgs e)
         {
             const int cost = 20;
@@ -434,27 +433,36 @@ namespace RpgWpf
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
-        private void BuyDefenseButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Kauft ein Max-Health-Upgrade (+20 MaxHP) für 15 Coins.
+        /// MaxHP und aktuelle HP werden in der Engine angepasst.
+        /// </summary>
+        private void BuyHealthButton_Click(object sender, RoutedEventArgs e)
         {
             const int cost = 15;
-            const double increase = 1.0;
+            const double hpIncrease = 20.0; // Aufwertung der MaxHP
 
-            bool success = _engine.TryBuyDefenseUpgrade(cost, increase, out string message);
+            bool success = _engine.TryBuyMaxHealthUpgrade(cost, hpIncrease, out string message);
 
             AppendLog("[Shop] " + message);
 
             if (success)
             {
+                // MaxHP und aktuelle HP haben sich geändert → Character-UI aktualisieren
+                SyncCharacterToUi();
                 SyncMetaToUi();
             }
 
             MessageBox.Show(
                 message,
-                "Shop – Defense upgrade",
+                "Shop – Max health upgrade",
                 MessageBoxButton.OK,
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
+        /// <summary>
+        /// Kauft eine HealPotion Stufe 1 und fügt sie dem Inventar hinzu.
+        /// </summary>
         private void BuyHealPotion1Button_Click(object sender, RoutedEventArgs e)
         {
             bool success = _engine.TryBuyHealPotion(1, out string message);
@@ -475,6 +483,9 @@ namespace RpgWpf
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
+        /// <summary>
+        /// Kauft eine HealPotion Stufe 2 und fügt sie dem Inventar hinzu.
+        /// </summary>
         private void BuyHealPotion2Button_Click(object sender, RoutedEventArgs e)
         {
             bool success = _engine.TryBuyHealPotion(2, out string message);
@@ -495,6 +506,9 @@ namespace RpgWpf
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
+        /// <summary>
+        /// Kauft eine PoisonPotion Stufe 1 und fügt sie dem Inventar hinzu.
+        /// </summary>
         private void BuyPoisonPotion1Button_Click(object sender, RoutedEventArgs e)
         {
             bool success = _engine.TryBuyPoisonPotion(1, out string message);
@@ -515,6 +529,9 @@ namespace RpgWpf
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
+        /// <summary>
+        /// Kauft eine PoisonPotion Stufe 2 und fügt sie dem Inventar hinzu.
+        /// </summary>
         private void BuyPoisonPotion2Button_Click(object sender, RoutedEventArgs e)
         {
             bool success = _engine.TryBuyPoisonPotion(2, out string message);
@@ -534,6 +551,5 @@ namespace RpgWpf
                 MessageBoxButton.OK,
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
-
     }
 }

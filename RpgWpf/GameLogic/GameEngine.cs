@@ -41,11 +41,6 @@ namespace RpgWpf.GameLogic
         public int Coins { get; private set; }
 
         /// <summary>
-        /// Verteidigungswert des Spielers. Wird vom eingehenden Schaden abgezogen (mindestens 0).
-        /// </summary>
-        public double Defense { get; private set; }
-
-        /// <summary>
         /// Anzahl aller abgeschlossenen Kämpfe (eine "Runde" im Sinne: Kampf bis Spieler oder Gegner tot ist).
         /// </summary>
         public int FinishedBattles { get; private set; }
@@ -83,8 +78,8 @@ namespace RpgWpf.GameLogic
                 Dragon
             };
 
+            // Startwert – kann später reduziert werden, wenn Balancing angepasst werden soll
             Coins = 10000;
-            Defense = 0;
         }
 
         // ============================
@@ -92,7 +87,7 @@ namespace RpgWpf.GameLogic
         // ============================
 
         /// <summary>
-        /// Liefert eine mehrzeilige Zusammenfassung des Spielers inkl. Level, EXP, Coins und Defense.
+        /// Liefert eine mehrzeilige Zusammenfassung des Spielers inkl. Level, EXP, Coins.
         /// </summary>
         public string GetStatusText()
         {
@@ -110,7 +105,6 @@ namespace RpgWpf.GameLogic
             sb.AppendLine($"Special chance: {Player.SpecialAttackChancePercent}%");
             sb.AppendLine();
             sb.AppendLine($"Coins: {Coins}");
-            sb.AppendLine($"Defense: {Defense}");
 
             return sb.ToString();
         }
@@ -150,14 +144,21 @@ namespace RpgWpf.GameLogic
         //   Kampf-API für das UI
         // ============================
 
-        // Wrapper für bestehende Aufrufer (z. B. alte Click-Handler)
+        /// <summary> Komfort-Wrapper für alte Click-Handler – greift den Goblin an. </summary>
         public string AttackGoblin() => Attack(Goblin);
+
+        /// <summary> Komfort-Wrapper für alte Click-Handler – greift die Elfe an. </summary>
         public string AttackElfe() => Attack(Elfe);
+
+        /// <summary> Komfort-Wrapper für alte Click-Handler – greift den Werwolf an. </summary>
         public string AttackWerwolf() => Attack(Werwolf);
 
         /// <summary>
         /// Führt eine komplette Kampfrunde gegen den angegebenen Gegner aus.
+        /// Eine Runde endet, wenn entweder der Gegner oder der Spieler 0 HP erreicht.
         /// </summary>
+        /// <param name="enemy">Zielgegner der Runde.</param>
+        /// <returns>Mehrzeiliger Log-Text für das Game-Log.</returns>
         public string Attack(Entity enemy)
         {
             var sb = new StringBuilder();
@@ -174,7 +175,7 @@ namespace RpgWpf.GameLogic
                 return sb.ToString();
             }
 
-            // Ausgangszustand
+            // Ausgangszustand vor der Runde
             sb.AppendLine($"Deine Leben: {Player.HP} / {Player.MaxHP}");
             sb.AppendLine($"{enemy.Name} Leben: {enemy.HP} / {enemy.MaxHP}");
             sb.AppendLine();
@@ -185,30 +186,32 @@ namespace RpgWpf.GameLogic
                 ? Player.GetSpecialAttackDamage()
                 : Player.GetAttackDamage();
 
-            // Gegner greift zurück – Defense reduziert eingehenden Schaden (nicht unter 0)
-            double enemyBaseDamage = enemy.GetAttackDamage();
-            double enemyDamage = Math.Max(0, enemyBaseDamage - Defense);
+            // Gegner greift zurück
+            double enemyDamage = enemy.GetAttackDamage();
 
             bool enemyDied = enemy.TakeDamage(playerDamage);
             bool playerDied = Player.TakeDamage(enemyDamage);
 
+            // Log-Ausgaben zur Runde
             if (special)
             {
                 sb.AppendLine($"Spezialangriff x{Player.DamageMultiplier} damage!");
             }
 
             sb.AppendLine($"Du hast {playerDamage} Schaden gemacht.");
+
             if (enemyDamage > 0)
             {
                 sb.AppendLine($"{enemy.Name} hat {enemyDamage} Schaden gemacht.");
             }
             else
             {
-                sb.AppendLine($"{enemy.Name} konnte keinen Schaden verursachen (Defense).");
+                sb.AppendLine($"{enemy.Name} hat keinen Schaden verursacht.");
             }
+
             sb.AppendLine();
 
-            // Neue HP anzeigen
+            // Neue HP nach der Runde
             sb.AppendLine($"Deine Leben: {Player.HP} / {Player.MaxHP}");
             sb.AppendLine($"{enemy.Name} Leben: {enemy.HP} / {enemy.MaxHP}");
 
@@ -251,7 +254,7 @@ namespace RpgWpf.GameLogic
 
             var inv = Player.Inventar;
 
-            // HealPotion: automatisch auf den Spieler
+            // HealPotion: wird auf den Spieler angewendet
             if (item is HealPotion heal)
             {
                 bool used = heal.useItem(Player);
@@ -294,11 +297,11 @@ namespace RpgWpf.GameLogic
         }
 
         // ============================
-        //   Shop-Logik (Attack / Defense / Potions)
+        //   Shop-Logik (Attack / HP / Potions)
         // ============================
 
         /// <summary>
-        /// Versucht, einen Angriff-Upgrade zu kaufen. Kosten werden in Coins abgezogen.
+        /// Versucht, einen Angriffs-Upgrade zu kaufen. Kosten werden in Coins abgezogen.
         /// </summary>
         public bool TryBuyAttackUpgrade(int cost, double attackIncrease, out string message)
         {
@@ -318,9 +321,10 @@ namespace RpgWpf.GameLogic
         }
 
         /// <summary>
-        /// Versucht, einen Defense-Upgrade zu kaufen. Kosten werden in Coins abgezogen.
+        /// Versucht, ein MaxHP-Upgrade zu kaufen. Kosten werden in Coins abgezogen.
+        /// MaxHP wird erhöht und der Spieler danach vollständig geheilt.
         /// </summary>
-        public bool TryBuyDefenseUpgrade(int cost, double defenseIncrease, out string message)
+        public bool TryBuyMaxHealthUpgrade(int cost, double hpIncrease, out string message)
         {
             if (!CheckCoins(cost, out message))
             {
@@ -328,9 +332,14 @@ namespace RpgWpf.GameLogic
             }
 
             Coins -= cost;
-            Defense += defenseIncrease;
 
-            message = $"Defense wurde um {defenseIncrease} erhöht (neu: {Defense}).";
+            // MaxHP des Spielers erhöhen
+            Player.SetMaxHP(Player.MaxHP + hpIncrease);
+
+            // Nach einem Health-Upgrade werden die HP vollständig aufgefüllt
+            Player.SetHP(Player.MaxHP);
+
+            message = $"Max health wurde um {hpIncrease} erhöht (jetzt: {Player.MaxHP}).";
             return true;
         }
 
@@ -402,6 +411,9 @@ namespace RpgWpf.GameLogic
             return true;
         }
 
+        /// <summary>
+        /// Prüft, ob genügend Coins für einen Kauf vorhanden sind.
+        /// </summary>
         private bool CheckCoins(int cost, out string message)
         {
             if (cost <= 0)
@@ -424,6 +436,10 @@ namespace RpgWpf.GameLogic
         //   Interne Helfer (Drops, Sieg, Niederlage)
         // ============================
 
+        /// <summary>
+        /// Behandelt die Konsequenzen, wenn ein Gegner besiegt wurde:
+        /// Coins, EXP, Potion-Drop, Sieg-Regeneration und Respawn des Gegners.
+        /// </summary>
         private void HandleEnemyDefeated(Entity enemy, StringBuilder sb)
         {
             sb.AppendLine();
@@ -482,6 +498,9 @@ namespace RpgWpf.GameLogic
             enemy.SetHP(enemy.MaxHP);
         }
 
+        /// <summary>
+        /// Gibt die Coin-Belohnung für einen besiegten Gegner zurück.
+        /// </summary>
         private int GetCoinReward(Entity enemy)
         {
             if (enemy is Slime) return 5;
@@ -528,7 +547,8 @@ namespace RpgWpf.GameLogic
         }
 
         /// <summary>
-        /// Behandelt eine Niederlage des Spielers: Coins und Inventar werden gelöscht, HP werden aufgefüllt.
+        /// Behandelt eine Niederlage des Spielers:
+        /// Coins und Inventar werden gelöscht, HP werden aufgefüllt.
         /// Gegner bleiben unverändert.
         /// </summary>
         private void HandlePlayerDefeated(StringBuilder sb)
