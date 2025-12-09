@@ -211,12 +211,12 @@ namespace RpgWpf
             // Engine mit Beispielwerten erzeugen
             _engine = new GameEngine(
                 vorname: "Tobi",
-                playerTag: "Tobender50",
-                alter: 20,
+                playerTag: "Test_Player1",
+                alter: 21,
                 inventarGroesse: 20
             );
 
-            _engine.Player.IsAdmin = true;
+            _engine.Player.IsAdmin = false;
 
             // Admin-Status in die UI spiegeln
             IsAdmin = _engine.Player.IsAdmin;

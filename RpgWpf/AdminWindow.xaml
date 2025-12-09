@@ -2,17 +2,55 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Admin Panel"
-        Width="850"
-        Height="550"
-        MinWidth="850"
-        MinHeight="550"
+        Width="900"
+        Height="650"
+        MinWidth="900"
+        MinHeight="650"
         WindowStartupLocation="CenterOwner">
 
+    <!-- ======================= -->
+    <!--       Ressourcen        -->
+    <!-- ======================= -->
+    <Window.Resources>
+
+        <!-- Gemeinsamer Button-Stil für das Admin-Panel:
+             Farbe bleibt Standard, nur Form/Größe kompakter -->
+        <Style TargetType="Button">
+            <!-- Weniger Innenabstand → Buttons werden flacher -->
+            <Setter Property="Padding" Value="2,1" />
+            <!-- Kleinere Schrift → reduziert Gesamthöhe -->
+            <Setter Property="FontSize" Value="12" />
+            <!-- Weniger Außenabstand -->
+            <Setter Property="Margin" Value="0,1,0,1" />
+            <Setter Property="Cursor" Value="Hand" />
+
+            <!-- Einheitliches Button-Template mit abgerundeten Ecken -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <!-- ======================= -->
+    <!--         Layout          -->
+    <!-- ======================= -->
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <!-- ======================= -->
@@ -21,73 +59,237 @@
         <GroupBox Header="Player / Progress"
                   Grid.Column="0"
                   Margin="0,0,10,0">
-            <StackPanel Margin="8">
 
-                <!-- Anzeige der aktuellen Werte -->
-                <TextBlock Text="{Binding Level, StringFormat=Level: {0}}"/>
-                <TextBlock Margin="0,2,0,0">
-                    <Run Text="EXP: "/>
-                    <Run Text="{Binding CurrentExp}"/>
-                    <Run Text=" / "/>
-                    <Run Text="{Binding ExpToNextLevel}"/>
-                </TextBlock>
+            <!-- ScrollViewer, falls es bei kleineren Auflösungen zu voll wird -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8">
 
-                <Separator Margin="0,6,0,6"/>
+                    <!-- Anzeige der aktuellen Player-Werte -->
+                    <TextBlock Text="{Binding Level, StringFormat=Level: {0}}" />
+                    <TextBlock Margin="0,2,0,0">
+                        <Run Text="EXP: " />
+                        <Run Text="{Binding CurrentExp}" />
+                        <Run Text=" / " />
+                        <Run Text="{Binding ExpToNextLevel}" />
+                    </TextBlock>
 
-                <TextBlock Margin="0,0,0,2">
-                    <Run Text="HP: "/>
-                    <Run Text="{Binding HP}"/>
-                    <Run Text=" / "/>
-                    <Run Text="{Binding MaxHP}"/>
-                </TextBlock>
-                <TextBlock Text="{Binding AttackDamage, StringFormat=Attack damage: {0}}"/>
-                <TextBlock Text="{Binding DamageMultiplier, StringFormat=Damage multiplier (special): {0}x}"/>
+                    <Separator Margin="0,6,0,6" />
 
-                <Separator Margin="0,6,0,6"/>
+                    <TextBlock Margin="0,0,0,2">
+                        <Run Text="HP: " />
+                        <Run Text="{Binding HP}" />
+                        <Run Text=" / " />
+                        <Run Text="{Binding MaxHP}" />
+                    </TextBlock>
+                    <TextBlock Text="{Binding AttackDamage, StringFormat=Attack damage: {0}}" />
+                    <TextBlock Text="{Binding DamageMultiplier, StringFormat=Damage multiplier (special): {0}x}" />
 
-                <TextBlock Text="{Binding Coins, StringFormat=Coins: {0}}"/>
+                    <Separator Margin="0,6,0,6" />
 
-                <Separator Margin="0,10,0,6"/>
+                    <TextBlock Text="{Binding Coins, StringFormat=Coins: {0}}" />
 
-                <!-- Admin-Aktionen für Player -->
-                <TextBlock Text="Admin actions"
-                           FontWeight="Bold"
-                           Margin="0,0,0,4"/>
+                    <Separator Margin="0,10,0,6" />
 
-                <!-- Coins setzen -->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0,2,0,2">
-                    <TextBlock Text="Coins:"
-                               VerticalAlignment="Center"
-                               Margin="0,0,4,0"/>
-                    <TextBox x:Name="CoinsInputBox"
-                             Width="80"
-                             Margin="0,0,4,0"/>
-                    <Button Content="Set"
-                            Width="60"
-                            Click="SetCoinsButton_Click"/>
+                    <!-- Admin-Aktionen für Player -->
+                    <TextBlock Text="Admin actions"
+                               FontWeight="Bold"
+                               Margin="0,0,0,4" />
+
+                    <!-- ========= Level & EXP ========= -->
+                    <TextBlock Text="Level / EXP"
+                               FontWeight="Bold"
+                               Margin="0,4,0,2" />
+
+                    <!-- Level setzen -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="Level:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="LevelInputBox"
+                                 Width="50"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Set"
+                                Width="55"
+                                Click="SetLevelButton_Click" />
+                    </StackPanel>
+
+                    <!-- EXP setzen -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="EXP:"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="ExpInputBox"
+                                 Width="60"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Set"
+                                Width="55"
+                                Click="SetExpButton_Click" />
+                    </StackPanel>
+
+                    <!-- ========= Coins ========= -->
+                    <TextBlock Text="Coins"
+                               FontWeight="Bold"
+                               Margin="0,6,0,2" />
+
+                    <!-- Coins setzen -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="Coins (set):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="CoinsInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Set"
+                                Width="55"
+                                Click="SetCoinsButton_Click" />
+                    </StackPanel>
+
+                    <!-- Coins addieren -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="Coins (add):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="CoinsAddInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Add"
+                                Width="55"
+                                Click="AddCoinsButton_Click" />
+                    </StackPanel>
+
+                    <!-- ========= HP & MaxHP ========= -->
+                    <TextBlock Text="Health"
+                               FontWeight="Bold"
+                               Margin="0,6,0,2" />
+
+                    <!-- HP setzen -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="HP (set):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="HpSetInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Set"
+                                Width="55"
+                                Click="SetHpButton_Click" />
+                    </StackPanel>
+
+                    <!-- HP addieren -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="HP (add):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="HpAddInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Add"
+                                Width="55"
+                                Click="AddHpButton_Click" />
+                    </StackPanel>
+
+                    <!-- MaxHP setzen -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="Max HP (set):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="MaxHpInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Set"
+                                Width="55"
+                                Click="SetMaxHpButton_Click" />
+                    </StackPanel>
+
+                    <!-- MaxHP addieren -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="Max HP (add):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="MaxHpAddInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Add"
+                                Width="55"
+                                Click="AddMaxHpButton_Click" />
+                    </StackPanel>
+
+                    <!-- Voll heilen -->
+                    <Button Content="Heal player to full HP"
+                            Margin="0,6,0,0"
+                            Click="HealPlayerButton_Click" />
+
+                    <!-- ========= Attack / Special ========= -->
+                    <TextBlock Text="Attack / Special"
+                               FontWeight="Bold"
+                               Margin="0,8,0,2" />
+
+                    <!-- Attack damage setzen -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="Attack (set):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="AttackSetInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Set"
+                                Width="55"
+                                Click="SetAttackButton_Click" />
+                    </StackPanel>
+
+                    <!-- Attack damage addieren -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="Attack (add):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="AttackAddInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Add"
+                                Width="55"
+                                Click="AddAttackButton_Click" />
+                    </StackPanel>
+
+                    <!-- Damage Multiplier setzen -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,3,0,1">
+                        <TextBlock Text="Damage multiplier (x):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="DamageMultiplierInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Set"
+                                Width="55"
+                                Click="SetDamageMultiplierButton_Click" />
+                    </StackPanel>
+
+                    <!-- Special chance setzen -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,1,0,1">
+                        <TextBlock Text="Special chance (%):"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0" />
+                        <TextBox x:Name="SpecialChanceInputBox"
+                                 Width="70"
+                                 Margin="0,0,4,0" />
+                        <Button Content="Set"
+                                Width="55"
+                                Click="SetSpecialChanceButton_Click" />
+                    </StackPanel>
+
                 </StackPanel>
-
-                <!-- MaxHP setzen -->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0,2,0,2">
-                    <TextBlock Text="Max HP:"
-                               VerticalAlignment="Center"
-                               Margin="0,0,4,0"/>
-                    <TextBox x:Name="MaxHpInputBox"
-                             Width="80"
-                             Margin="0,0,4,0"/>
-                    <Button Content="Set"
-                            Width="60"
-                            Click="SetMaxHpButton_Click"/>
-                </StackPanel>
-
-                <!-- Voll heilen -->
-                <Button Content="Heal player to full HP"
-                        Margin="0,8,0,0"
-                        Click="HealPlayerButton_Click"/>
-
-            </StackPanel>
+            </ScrollViewer>
         </GroupBox>
 
         <!-- ======================= -->
@@ -100,55 +302,55 @@
 
                 <!-- Liste aller Gegner -->
                 <ListBox x:Name="AdminEnemiesList"
-                    Height="180"
-                    ItemsSource="{Binding Enemies, Mode=OneWay}"
-                    SelectedItem="{Binding SelectedEnemy, Mode=TwoWay}">
+                         Height="180"
+                         ItemsSource="{Binding Enemies, Mode=OneWay}"
+                         SelectedItem="{Binding SelectedEnemy, Mode=TwoWay}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <!-- Nur Anzeige, kein Zurückschreiben auf Name -->
-                            <TextBlock Text="{Binding Name, Mode=OneWay}"/>
+                            <TextBlock Text="{Binding Name, Mode=OneWay}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Separator Margin="0,6,0,6"/>
+                <Separator Margin="0,6,0,6" />
 
                 <!-- Details zum ausgewählten Gegner -->
                 <TextBlock Text="Selected enemy:"
-                           FontWeight="Bold"/>
+                           FontWeight="Bold" />
 
                 <TextBlock Margin="0,2,0,0">
-                    <Run Text="Name: "/>
-                    <Run Text="{Binding SelectedEnemy.Name, Mode=OneWay}"/>
+                    <Run Text="Name: " />
+                    <Run Text="{Binding SelectedEnemy.Name, Mode=OneWay}" />
                 </TextBlock>
 
                 <TextBlock Margin="0,2,0,4">
-                    <Run Text="HP: "/>
-                    <Run Text="{Binding SelectedEnemyHP}"/>
-                    <Run Text=" / "/>
-                    <Run Text="{Binding SelectedEnemyMaxHP}"/>
+                    <Run Text="HP: " />
+                    <Run Text="{Binding SelectedEnemyHP}" />
+                    <Run Text=" / " />
+                    <Run Text="{Binding SelectedEnemyMaxHP}" />
                 </TextBlock>
 
                 <!-- Admin-Aktionen für Gegner -->
                 <Button Content="Reset HP to max"
                         Margin="0,2,0,2"
-                        Click="ResetEnemyHpButton_Click"/>
+                        Click="ResetEnemyHpButton_Click" />
 
                 <Button Content="Kill enemy (HP = 0)"
                         Margin="0,2,0,2"
-                        Click="KillEnemyButton_Click"/>
+                        Click="KillEnemyButton_Click" />
 
                 <StackPanel Orientation="Horizontal"
                             Margin="0,4,0,0">
                     <TextBlock Text="Set HP:"
                                VerticalAlignment="Center"
-                               Margin="0,0,4,0"/>
+                               Margin="0,0,4,0" />
                     <TextBox x:Name="EnemyHpInputBox"
                              Width="80"
-                             Margin="0,0,4,0"/>
+                             Margin="0,0,4,0" />
                     <Button Content="Apply"
                             Width="70"
-                            Click="SetEnemyHpButton_Click"/>
+                            Click="SetEnemyHpButton_Click" />
                 </StackPanel>
 
             </StackPanel>
@@ -168,45 +370,57 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding ItemName}"/>
-                                <TextBlock Text=" ("/>
-                                <TextBlock Text="{Binding InventarGroesse}"/>
-                                <TextBlock Text=")"/>
+                                <TextBlock Text="{Binding ItemName}" />
+                                <TextBlock Text=" (" />
+                                <TextBlock Text="{Binding InventarGroesse}" />
+                                <TextBlock Text=")" />
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Separator Margin="0,6,0,6"/>
+                <Separator Margin="0,6,0,6" />
 
                 <!-- Admin-Aktionen fürs Inventar -->
                 <TextBlock Text="Inventory actions"
                            FontWeight="Bold"
-                           Margin="0,0,0,4"/>
+                           Margin="0,0,0,4" />
 
                 <Button Content="Clear inventory"
                         Margin="0,2,0,4"
-                        Click="ClearInventoryButton_Click"/>
+                        Click="ClearInventoryButton_Click" />
 
                 <TextBlock Text="Add potions"
                            FontWeight="Bold"
-                           Margin="0,4,0,4"/>
+                           Margin="0,4,0,4" />
 
+                <!-- Heal-Tränke hinzufügen -->
                 <Button Content="Add Heal Potion I"
                         Margin="0,2,0,2"
-                        Click="AddHealPotion1Button_Click"/>
+                        Click="AddHealPotion1Button_Click" />
 
                 <Button Content="Add Heal Potion II"
-                        Margin="0,2,0,4"
-                        Click="AddHealPotion2Button_Click"/>
+                        Margin="0,2,0,2"
+                        Click="AddHealPotion2Button_Click" />
 
+                <!-- Heal Potion III -->
+                <Button Content="Add Heal Potion III"
+                        Margin="0,2,0,4"
+                        Click="AddHealPotion3Button_Click" />
+
+                <!-- Poison-Tränke hinzufügen -->
                 <Button Content="Add Poison Potion I"
                         Margin="0,2,0,2"
-                        Click="AddPoisonPotion1Button_Click"/>
+                        Click="AddPoisonPotion1Button_Click" />
 
                 <Button Content="Add Poison Potion II"
                         Margin="0,2,0,2"
-                        Click="AddPoisonPotion2Button_Click"/>
+                        Click="AddPoisonPotion2Button_Click" />
+
+                <!-- Poison Potion III -->
+                <Button Content="Add Poison Potion III"
+                        Margin="0,2,0,2"
+                        Click="AddPoisonPotion3Button_Click" />
 
             </StackPanel>
         </GroupBox>
