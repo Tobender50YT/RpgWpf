@@ -98,10 +98,16 @@
 
                 <!-- Liste aller Gegner -->
                 <ListBox x:Name="AdminEnemiesList"
-                         Height="180"
-                         ItemsSource="{Binding Enemies}"
-                         SelectedItem="{Binding SelectedEnemy, Mode=TwoWay}"
-                         DisplayMemberPath="Name"/>
+                    Height="180"
+                    ItemsSource="{Binding Enemies, Mode=OneWay}"
+                    SelectedItem="{Binding SelectedEnemy, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Nur Anzeige, kein Zurückschreiben auf Name -->
+                            <TextBlock Text="{Binding Name, Mode=OneWay}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
                 <Separator Margin="0,6,0,6"/>
 
@@ -111,7 +117,7 @@
 
                 <TextBlock Margin="0,2,0,0">
                     <Run Text="Name: "/>
-                    <Run Text="{Binding SelectedEnemy.Name}"/>
+                    <Run Text="{Binding SelectedEnemy.Name, Mode=OneWay}"/>
                 </TextBlock>
 
                 <TextBlock Margin="0,2,0,4">

@@ -137,7 +137,7 @@ namespace RpgWpf
             get;
             set { field = value; OnPropertyChanged(nameof(CurrentEnemyAttack)); }
         }
-        
+
         public int InventoryUsed
         {
             get;
@@ -216,7 +216,7 @@ namespace RpgWpf
                 inventarGroesse: 20
             );
 
-            _engine.Player.IsAdmin = false;
+            _engine.Player.IsAdmin = true;
 
             // Admin-Status in die UI spiegeln
             IsAdmin = _engine.Player.IsAdmin;

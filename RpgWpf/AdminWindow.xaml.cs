@@ -166,9 +166,6 @@ namespace RpgWpf
 
             var inv = p.Inventar;
             InventoryItems = inv.Snapshot();
-
-            AdminEnemiesList.Items.Refresh();
-            AdminInventoryList.Items.Refresh();
         }
 
         /// <summary>
@@ -228,10 +225,8 @@ namespace RpgWpf
                 return;
             }
 
-            // MaxHP setzen
             _engine.Player.SetMaxHP(value);
 
-            // HP begrenzen, falls sie über der neuen MaxHP liegen
             if (_engine.Player.HP > _engine.Player.MaxHP)
             {
                 _engine.Player.SetHP(_engine.Player.MaxHP);
