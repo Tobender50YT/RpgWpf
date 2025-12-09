@@ -263,12 +263,22 @@
             </Grid.ColumnDefinitions>
 
             <!-- Inventory (links unten) -->
-            <GroupBox Header="Inventory"
-                      Grid.Column="0"
-                      Margin="0,0,10,0">
+            <GroupBox Grid.Column="0"
+                Margin="0,0,10,0">
+
+                <!-- Dynamischer Header: "Inventory 5/24" -->
+                <GroupBox.Header>
+                    <TextBlock>
+                        <Run Text="Inventory "/>
+                        <Run Text="{Binding InventoryUsed}"/>
+                        <Run Text="/"/>
+                        <Run Text="{Binding InventoryMax}"/>
+                    </TextBlock>
+                </GroupBox.Header>
+
                 <Grid>
                     <ListBox x:Name="InventoryList"
-                             ItemsSource="{Binding InventoryItems}">
+                        ItemsSource="{Binding InventoryItems}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">

@@ -120,6 +120,18 @@ namespace RpgWpf
             get;
             set { field = value; OnPropertyChanged(nameof(CurrentEnemyAttack)); }
         }
+        
+        public int InventoryUsed
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(InventoryUsed)); }
+        }
+
+        public int InventoryMax
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(InventoryMax)); }
+        }
 
         // --- Shop-Box (rechts) ---
 
@@ -266,6 +278,9 @@ namespace RpgWpf
         private void SyncInventoryToUi()
         {
             var inv = _engine.Player.Inventar;
+            InventoryUsed = inv.UsedSize;
+            InventoryMax = inv.MaxSize;
+
             var items = inv.Snapshot();
             InventoryItems = items;
         }
@@ -423,6 +438,7 @@ namespace RpgWpf
             if (success)
             {
                 SyncCharacterToUi();
+                SyncInventoryToUi();
                 SyncMetaToUi();
             }
 
@@ -450,6 +466,7 @@ namespace RpgWpf
             {
                 // MaxHP und aktuelle HP haben sich geändert → Character-UI aktualisieren
                 SyncCharacterToUi();
+                SyncInventoryToUi();
                 SyncMetaToUi();
             }
 
