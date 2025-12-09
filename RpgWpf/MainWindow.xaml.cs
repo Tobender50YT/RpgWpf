@@ -23,6 +23,23 @@ namespace RpgWpf
 
         // --- Character-Box (links) ---
 
+        /// <summary>
+        /// Kennzeichnet, ob der aktuell gespielte Charakter Admin-Rechte hat.
+        /// Wird aus der GameEngine gespiegelt.
+        /// </summary>
+        public bool IsAdmin
+        {
+            get;
+            set
+            {
+                field = value;
+                OnPropertyChanged(nameof(IsAdmin));
+
+                // Sichtbarkeit des Admin-Buttons direkt anpassen
+                AdminMenuButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
         public string PlayerTag
         {
             get;
@@ -198,6 +215,11 @@ namespace RpgWpf
                 alter: 20,
                 inventarGroesse: 20
             );
+
+            _engine.Player.IsAdmin = false;
+
+            // Admin-Status in die UI spiegeln
+            IsAdmin = _engine.Player.IsAdmin;
 
             // Gegnerliste aus der Engine übernehmen (inklusive Slime, Orc, Dragon usw.)
             Enemies = new List<Entity>(_engine.Enemies);
@@ -398,16 +420,37 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Öffnet später ein separates Admin-Menü (derzeit nur Platzhalter).
+        /// Öffnet ein separates Admin-Menü
         /// </summary>
         private void AdminMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            // Vorläufig nur Platzhalter – später eigenes Admin-Fenster oder Dialog
-            MessageBox.Show(
-                "Das Admin-Menü ist noch nicht implementiert.",
-                "Admin-Menü",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            // Sicherheitscheck – sollte durch Sichtbarkeit des Buttons bereits abgedeckt sein
+            if (!_engine.Player.IsAdmin)
+            {
+                MessageBox.Show(
+                    "Der aktuelle Charakter verfügt nicht über Admin-Rechte.",
+                    "Kein Admin",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            // Admin-Fenster öffnen
+            var adminWindow = new AdminWindow(_engine)
+            {
+                Owner = this
+            };
+
+            adminWindow.ShowDialog();
+
+            // Nach Schließen des Admin-Fensters die Haupt-UI aktualisieren
+            SyncCharacterToUi();
+            SyncMetaToUi();
+            SyncInventoryToUi();
+            SyncCurrentEnemyToUi();
+
+            EnemiesList.Items.Refresh();
+            InventoryList.Items.Refresh();
         }
 
         /// <summary>

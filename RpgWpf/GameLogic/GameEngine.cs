@@ -50,8 +50,6 @@ namespace RpgWpf.GameLogic
         /// </summary>
         private readonly Dictionary<Entity, int> _defeatCounter = new Dictionary<Entity, int>();
 
-        private readonly string _adminPassword = "123";
-
         // ============================
         //   Konstruktor
         // ============================
@@ -135,10 +133,6 @@ namespace RpgWpf.GameLogic
 
         /// <summary> True, wenn der Spieler keine HP mehr hat. </summary>
         public bool IsGameOver => Player.IsDead;
-
-        /// <summary> Passwortprüfung für Admin-Funktionen. </summary>
-        public bool IsValidAdminPassword(string input) =>
-            string.Equals(input, _adminPassword, StringComparison.Ordinal);
 
         // ============================
         //   Kampf-API für das UI
@@ -414,6 +408,20 @@ namespace RpgWpf.GameLogic
 
             message = $"PoisonPotion (Stufe {strength}) wurde gekauft und dem Inventar hinzugefügt.";
             return true;
+        }
+
+        /// <summary>
+        /// Setzt die Coin-Anzahl direkt. Nur für Admin-Panel gedacht.
+        /// Negative Werte werden auf 0 begrenzt.
+        /// </summary>
+        public void SetCoinsAdmin(int amount)
+        {
+            if (amount < 0)
+            {
+                amount = 0;
+            }
+
+            Coins = amount;
         }
 
         /// <summary>

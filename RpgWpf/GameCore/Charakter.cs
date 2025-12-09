@@ -14,6 +14,11 @@ namespace RpgWpf.GameCore
         public string PlayerTag { get; }
         public int Alter { get; }
 
+        /// <summary>
+        /// Kennzeichnet, ob dieser Charakter Admin-Rechte hat.
+        /// </summary>
+        public bool IsAdmin { get; set; } = false;
+
         /// <summary> Multiplikator für Spezialangriff (x facher Schaden). </summary>
         public int DamageMultiplier { get; private set; } = 5;
 
