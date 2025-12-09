@@ -23,7 +23,7 @@ namespace RpgWpf.GameCore
         /// <summary> True, wenn HP == 0. </summary>
         public bool IsDead => HP <= 0;
 
-        protected Entity(string name, double startHP = 200000, double baseAttack = 3)
+        protected Entity(string name, double startHP = 200, double baseAttack = 3)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             MaxHP = Math.Max(1, startHP);

@@ -79,7 +79,7 @@ namespace RpgWpf.GameLogic
             };
 
             // Startwert – kann später reduziert werden, wenn Balancing angepasst werden soll
-            Coins = 10000;
+            Coins = 30;
         }
 
         // ============================

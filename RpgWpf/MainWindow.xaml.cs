@@ -184,7 +184,7 @@ namespace RpgWpf
                 vorname: "Tobi",
                 playerTag: "Tobender50",
                 alter: 20,
-                inventarGroesse: 100
+                inventarGroesse: 20
             );
 
             // Gegnerliste aus der Engine übernehmen (inklusive Slime, Orc, Dragon usw.)
