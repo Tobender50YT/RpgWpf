@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Threading;
 using RpgWpf.GameCore;
 using RpgWpf.GameLogic;
 
@@ -16,6 +17,11 @@ namespace RpgWpf
         //   Engine / Spiellogik
         // ============================
         private readonly GameEngine _engine;
+
+        /// <summary>
+        /// Timer für die automatische Lebenspunkte-Regeneration.
+        /// </summary>
+        private readonly DispatcherTimer _hpRegenTimer;
 
         // ============================
         //   Properties für Bindings
@@ -237,11 +243,49 @@ namespace RpgWpf
             AppendLog("Willkommen in deinem WPF-RPG!");
             AppendLog(string.Empty);
             AppendLog(_engine.GetStatusText());
+
+            // Einfacher Auto-Heal-Timer:
+            // alle 3 Sekunden wird 1 HP regeneriert, bis das Maximum erreicht ist.
+            _hpRegenTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3)
+            };
+            _hpRegenTimer.Tick += HpRegenTimer_Tick;
+            _hpRegenTimer.Start();
         }
 
         // ============================
         //   Hilfsmethoden (UI-Sync)
         // ============================
+
+        /// <summary>
+        /// Tick-Handler für die automatische Lebenspunkte-Regeneration.
+        /// Erhöht alle 2 Sekunden die HP um 1, solange der Spieler lebt
+        /// und noch nicht voll geheilt ist.
+        /// </summary>
+        private void HpRegenTimer_Tick(object? sender, EventArgs e)
+        {
+            var player = _engine.Player;
+
+            // Kein Auto-Heal, wenn der Spieler tot ist
+            if (player.HP <= 0)
+            {
+                return;
+            }
+
+            // Kein Auto-Heal, wenn bereits volle HP
+            if (player.HP >= player.MaxHP)
+            {
+                return;
+            }
+
+            // 1 HP regenerieren, aber nie über MaxHP hinaus
+            var newHp = Math.Min(player.MaxHP, player.HP + 1);
+            player.SetHP(newHp);
+
+            // Character-Box der UI aktualisieren
+            SyncCharacterToUi();
+        }
 
         /// <summary>
         /// Synchronisiert grundlegende Charakterdaten (inkl. Level/EXP) in die Bindings.
@@ -442,6 +486,7 @@ namespace RpgWpf
 
         /// <summary>
         /// Öffnet ein separates Admin-Menü
+        /// Während das Admin-Fenster geöffnet ist, wird die HP-Regeneration pausiert.
         /// </summary>
         private void AdminMenuButton_Click(object sender, RoutedEventArgs e)
         {
@@ -456,13 +501,24 @@ namespace RpgWpf
                 return;
             }
 
-            // Admin-Fenster öffnen
-            var adminWindow = new AdminWindow(_engine)
-            {
-                Owner = this
-            };
+            // HP-Regeneration pausieren, solange das Admin-Fenster offen ist
+            _hpRegenTimer?.Stop();
 
-            adminWindow.ShowDialog();
+            try
+            {
+                // Admin-Fenster öffnen
+                var adminWindow = new AdminWindow(_engine)
+                {
+                    Owner = this
+                };
+
+                adminWindow.ShowDialog();
+            }
+            finally
+            {
+                // Nach Schließen des Admin-Fensters die HP-Regeneration wieder starten
+                _hpRegenTimer?.Start();
+            }
 
             // Nach Schließen des Admin-Fensters die Haupt-UI aktualisieren
             SyncCharacterToUi();

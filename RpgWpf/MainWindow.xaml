@@ -121,11 +121,14 @@
                     <Separator Margin="0,5,0,5"/>
 
                     <!-- Lebenspunkte und Angriff -->
-                    <TextBlock Text="{Binding HP, StringFormat=Health Points: {0}}"/>
-                    <TextBlock Text="{Binding MaxHP, StringFormat=Max. Health: {0}}"/>
+                    <TextBlock>
+                        <Run Text="Health: " />
+                        <Run Text="{Binding HP}" />
+                        <Run Text=" / " />
+                        <Run Text="{Binding MaxHP}" />
+                    </TextBlock>
                     <TextBlock Text="{Binding AttackDamage, StringFormat=Attack damage: {0}}"
                                Margin="0,5,0,0"/>
-
                     <Separator Margin="0,5,0,5"/>
 
                     <!-- Spezialangriff -->
