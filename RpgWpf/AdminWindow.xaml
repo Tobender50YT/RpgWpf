@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Admin Panel"
         Width="900"
-        Height="700"
+        Height="720"
         MinWidth="900"
-        MinHeight="700"
+        MinHeight="720"
         WindowStartupLocation="CenterOwner">
 
     <!-- ======================= -->
