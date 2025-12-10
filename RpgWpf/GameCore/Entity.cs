@@ -33,7 +33,7 @@ namespace RpgWpf.GameCore
 
         /// <summary>
         /// Gibt den aktuellen Angriffs Schaden zurück. Gegner können dies überschreiben
-        /// (z. B. Werwolf macht 3x Basis Schaden).
+        /// (z. B. Werewolf macht 3x Basis Schaden).
         /// </summary>
         public virtual double GetAttackDamage() => BaseAttackDamage;
 

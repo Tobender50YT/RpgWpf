@@ -104,7 +104,7 @@
 
                 <StackPanel Margin="10">
                     <!-- Basisdaten -->
-                    <TextBlock Text="{Binding PlayerTag, StringFormat=Player tag: {0}}"/>
+                    <TextBlock Text="{Binding PlayerTag, StringFormat=Player: {0}}"/>
                     <TextBlock Text="{Binding Alter, StringFormat=Age: {0}}"
                                Margin="0,5,0,0"/>
 

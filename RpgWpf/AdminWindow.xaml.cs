@@ -199,6 +199,8 @@ namespace RpgWpf
             }
 
             var inv = p.Inventar;
+            InventoryUsed = inv.UsedSize;
+            InventoryMax = inv.MaxSize;
             InventoryItems = inv.Snapshot();
         }
 
@@ -697,5 +699,24 @@ namespace RpgWpf
             inv.Add(new PoisonPotion(ItemGroesse: 3));
             SyncFromEngine();
         }
+
+        /// <summary>
+        /// Aktuell belegte Inventar-Slots.
+        /// </summary>
+        public int InventoryUsed
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(InventoryUsed)); }
+        }
+
+        /// <summary>
+        /// Maximale Inventar-Slots.
+        /// </summary>
+        public int InventoryMax
+        {
+            get;
+            set { field = value; OnPropertyChanged(nameof(InventoryMax)); }
+        }
+
     }
 }

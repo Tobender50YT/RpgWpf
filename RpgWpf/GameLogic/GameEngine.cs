@@ -22,8 +22,8 @@ namespace RpgWpf.GameLogic
 
         /// <summary> Bekannte Gegner-Instanzen. </summary>
         public Goblin Goblin { get; }
-        public Elfe Elfe { get; }
-        public Werwolf Werwolf { get; }
+        public Elf Elf { get; }
+        public Werewolf Werewolf { get; }
 
         public Slime Slime { get; }
         public Orc Orc { get; }
@@ -55,13 +55,13 @@ namespace RpgWpf.GameLogic
         //   Konstruktor
         // ============================
 
-        public GameEngine(string vorname, string playerTag, int alter, int inventarGroesse)
+        public GameEngine(Charakter _Player)
         {
-            Player = new Charakter(vorname, playerTag, alter, inventarGroesse);
+            Player = _Player;
 
             Goblin = new Goblin();
-            Elfe = new Elfe();
-            Werwolf = new Werwolf();
+            Elf = new Elf();
+            Werewolf = new Werewolf();
 
             Slime = new Slime();
             Orc = new Orc();
@@ -71,9 +71,9 @@ namespace RpgWpf.GameLogic
             {
                 Slime,
                 Goblin,
-                Elfe,
+                Elf,
                 Orc,
-                Werwolf,
+                Werewolf,
                 Dragon
             };
 
@@ -143,10 +143,10 @@ namespace RpgWpf.GameLogic
         public string AttackGoblin() => Attack(Goblin);
 
         /// <summary> Komfort-Wrapper für alte Click-Handler – greift die Elfe an. </summary>
-        public string AttackElfe() => Attack(Elfe);
+        public string AttackElf() => Attack(Elf);
 
-        /// <summary> Komfort-Wrapper für alte Click-Handler – greift den Werwolf an. </summary>
-        public string AttackWerwolf() => Attack(Werwolf);
+        /// <summary> Komfort-Wrapper für alte Click-Handler – greift den Werewolf an. </summary>
+        public string AttackWerewolf() => Attack(Werewolf);
 
         /// <summary>
         /// Führt eine komplette Kampfrunde gegen den angegebenen Gegner aus.
@@ -519,9 +519,9 @@ namespace RpgWpf.GameLogic
         {
             if (enemy is Slime) return 5;
             if (enemy is Goblin) return 10;
-            if (enemy is Elfe) return 20;
+            if (enemy is Elf) return 20;
             if (enemy is Orc) return 35;
-            if (enemy is Werwolf) return 50;
+            if (enemy is Werewolf) return 50;
             if (enemy is Dragon) return 80;
 
             return 10;
@@ -534,9 +534,9 @@ namespace RpgWpf.GameLogic
         {
             if (enemy is Slime) return 5;
             if (enemy is Goblin) return 10;
-            if (enemy is Elfe) return 20;
+            if (enemy is Elf) return 20;
             if (enemy is Orc) return 35;
-            if (enemy is Werwolf) return 50;
+            if (enemy is Werewolf) return 50;
             if (enemy is Dragon) return 80;
 
             return 10;

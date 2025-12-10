@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Admin Panel"
         Width="900"
-        Height="650"
+        Height="700"
         MinWidth="900"
-        MinHeight="650"
+        MinHeight="700"
         WindowStartupLocation="CenterOwner">
 
     <!-- ======================= -->
@@ -359,8 +359,15 @@
         <!-- ======================= -->
         <!--   Inventory (Admin)     -->
         <!-- ======================= -->
-        <GroupBox Header="Inventory (Admin)"
-                  Grid.Column="2">
+        <GroupBox Grid.Column="2">
+            <GroupBox.Header>
+                <TextBlock>
+                    <Run Text="Inventory (Admin) " />
+                    <Run Text="{Binding InventoryUsed}" />
+                    <Run Text="/" />
+                    <Run Text="{Binding InventoryMax}" />
+                </TextBlock>
+            </GroupBox.Header>
             <StackPanel Margin="8">
 
                 <!-- Inventarübersicht -->

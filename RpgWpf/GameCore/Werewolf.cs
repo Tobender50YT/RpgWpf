@@ -1,8 +1,8 @@
 ﻿namespace RpgWpf.GameCore
 {
-    public class Werwolf : Entity
+    public class Werewolf : Entity
     {
-        public Werwolf(string name = "Werwolf") : base(name, startHP: 600)
+        public Werewolf(string name = "Werewolf") : base(name, startHP: 600)
         {
         }
 

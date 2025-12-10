@@ -208,12 +208,15 @@ namespace RpgWpf
             // DataContext für Bindings setzen
             DataContext = this;
 
+            Charakter Player = new Charakter("Tobi", "TestPlayer", 20, 20);
+
             // Engine mit Beispielwerten erzeugen
             _engine = new GameEngine(
-                vorname: "Tobi",
-                playerTag: "Test_Player1",
-                alter: 21,
-                inventarGroesse: 20
+                //vorname: "Tobi",
+                //playerTag: "Test_Player1",
+                //alter: 21,
+                //inventarGroesse: 20
+                Player
             );
 
             _engine.Player.IsAdmin = true;
@@ -485,11 +488,14 @@ namespace RpgWpf
                 SyncMetaToUi();
             }
 
-            MessageBox.Show(
-                message,
-                "Shop – Attack upgrade",
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            else
+            {
+                MessageBox.Show(
+                    message,
+                    "Shop – Attack upgrade",
+                    MessageBoxButton.OK,
+                    success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            }
         }
 
         /// <summary>
@@ -513,11 +519,14 @@ namespace RpgWpf
                 SyncMetaToUi();
             }
 
-            MessageBox.Show(
+            else
+            {
+                MessageBox.Show(
                 message,
                 "Shop – Max health upgrade",
                 MessageBoxButton.OK,
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            }
         }
 
         /// <summary>
@@ -536,11 +545,14 @@ namespace RpgWpf
                 InventoryList.Items.Refresh();
             }
 
-            MessageBox.Show(
+            else
+            {
+                MessageBox.Show(
                 message,
                 "Shop – Heal Potion I",
                 MessageBoxButton.OK,
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            }
         }
 
         /// <summary>
@@ -559,11 +571,14 @@ namespace RpgWpf
                 InventoryList.Items.Refresh();
             }
 
-            MessageBox.Show(
+            else
+            {
+                MessageBox.Show(
                 message,
                 "Shop – Heal Potion II",
                 MessageBoxButton.OK,
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            }
         }
 
         /// <summary>
@@ -582,11 +597,14 @@ namespace RpgWpf
                 InventoryList.Items.Refresh();
             }
 
-            MessageBox.Show(
+            else
+            {
+                MessageBox.Show(
                 message,
                 "Shop – Poison Potion I",
                 MessageBoxButton.OK,
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            }
         }
 
         /// <summary>
@@ -605,11 +623,14 @@ namespace RpgWpf
                 InventoryList.Items.Refresh();
             }
 
-            MessageBox.Show(
+            else
+            {
+                MessageBox.Show(
                 message,
                 "Shop – Poison Potion II",
                 MessageBoxButton.OK,
                 success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            }
         }
     }
 }
