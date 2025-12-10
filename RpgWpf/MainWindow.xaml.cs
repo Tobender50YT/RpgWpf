@@ -208,14 +208,10 @@ namespace RpgWpf
             // DataContext für Bindings setzen
             DataContext = this;
 
-            Charakter Player = new Charakter("Tobi", "TestPlayer", 20, 20);
+            Charakter Player = new Charakter("Tobi", "TestPlayer", 20, 8);
 
-            // Engine mit Beispielwerten erzeugen
+            // Engine erzeugen
             _engine = new GameEngine(
-                //vorname: "Tobi",
-                //playerTag: "Test_Player1",
-                //alter: 21,
-                //inventarGroesse: 20
                 Player
             );
 

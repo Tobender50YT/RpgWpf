@@ -11,6 +11,17 @@ namespace RpgWpf.GameCore
         private readonly Random _rng = new Random();
 
         /// <summary>
+        /// Basisgröße des Inventars auf Level 1.
+        /// Wird zur Berechnung der späteren Kapazität pro Level verwendet.
+        /// </summary>
+        private readonly int _baseInventorySize;
+
+        /// <summary>
+        /// Anzahl zusätzlicher Inventar-Slots pro Level (ab Level 2).
+        /// </summary>
+        private const int InventorySlotsPerLevel = 2;
+
+        /// <summary>
         /// Inventar des Charakters.
         /// </summary>
         public Inventar Inventar { get; }
@@ -70,7 +81,7 @@ namespace RpgWpf.GameCore
         /// <param name="vorname">Vorname des Spielers.</param>
         /// <param name="playerTag">Spieler-Tag/Handle.</param>
         /// <param name="alter">Alter des Spielers.</param>
-        /// <param name="invSize">Maximale Inventargröße.</param>
+        /// <param name="invSize">Maximale Inventargröße auf Level 1.</param>
         public Charakter(string vorname, string playerTag, int alter, int invSize)
             : base(playerTag)
         {
@@ -78,6 +89,9 @@ namespace RpgWpf.GameCore
             PlayerTag = playerTag;
             Alter = alter;
             Inventar = new Inventar(invSize);
+
+            // Basis-Inventargröße für spätere Level-Berechnung merken
+            _baseInventorySize = Inventar.MaxSize;
 
             // Startwerte für Kampfwerte
             SetBaseAttack(5);
@@ -87,6 +101,9 @@ namespace RpgWpf.GameCore
             Level = 1;
             CurrentExp = 0;
             ExpToNextLevel = CalculateExpRequirementForLevel(Level);
+
+            // Inventarkapazität an aktuelles Level anpassen (Level 1 → Basisgröße)
+            UpdateInventoryCapacityFromLevel();
         }
 
         /// <summary>
@@ -104,7 +121,7 @@ namespace RpgWpf.GameCore
         }
 
         /// <summary>
-        /// Setzt den Multiplikator für Spezialangriffe.
+        /// Setzt den Multiplikator für Spezialangriffe (Admin-Funktion).
         /// </summary>
         /// <param name="value">Neuer Multiplikator (mindestens 1).</param>
         public void SetDamageMultiplierFromAdmin(int value)
@@ -137,6 +154,9 @@ namespace RpgWpf.GameCore
 
                 // EXP-Anforderung für das nächste Level anhand der Progression neu berechnen
                 ExpToNextLevel = CalculateExpRequirementForLevel(Level);
+
+                // Inventarkapazität an das neue Level anpassen
+                UpdateInventoryCapacityFromLevel();
             }
 
             if (leveledUp)
@@ -155,7 +175,8 @@ namespace RpgWpf.GameCore
         /// <summary>
         /// Setzt das Spielerlevel direkt (Admin-Funktion).
         /// EXP werden auf 0 zurückgesetzt, die EXP-Anforderung für das nächste Level
-        /// wird anhand der Progression neu berechnet und die HP voll aufgefüllt.
+        /// wird anhand der Progression neu berechnet, Inventarkapazität angepasst
+        /// und die HP voll aufgefüllt.
         /// </summary>
         /// <param name="level">Ziel-Level (wird mindestens 1 gesetzt).</param>
         public void SetLevelFromAdmin(int level)
@@ -168,6 +189,9 @@ namespace RpgWpf.GameCore
             Level = level;
             CurrentExp = 0;
             ExpToNextLevel = CalculateExpRequirementForLevel(Level);
+
+            // Inventarkapazität an das gesetzte Level anpassen
+            UpdateInventoryCapacityFromLevel();
 
             // HP wie bei normalen Level-Ups voll auffüllen
             SetHP(MaxHP);
@@ -241,6 +265,16 @@ namespace RpgWpf.GameCore
             return (int)required;
         }
 
+        /// <summary>
+        /// Aktualisiert die maximale Inventar-Kapazität abhängig vom aktuellen Level.
+        /// Level 1 nutzt die Basisgröße, jedes weitere Level erhöht um InventorySlotsPerLevel.
+        /// </summary>
+        private void UpdateInventoryCapacityFromLevel()
+        {
+            int newMax = _baseInventorySize + (Level - 1) * InventorySlotsPerLevel;
+            Inventar.SetMaxSize(newMax);
+        }
+
         // ============================
         //   Abwärtskompatible Wrapper
         // ============================
@@ -263,7 +297,7 @@ namespace RpgWpf.GameCore
         [Obsolete("Nutze stattdessen DamageMultiplier")]
         public int getdmg_Multiplier() => DamageMultiplier;
 
-        [Obsolete("Nutze stattdessen SetDamageMultiplier(int)")]
+        [Obsolete("Nutze stattdessen SetDamageMultiplierFromAdmin(int)")]
         public void setdmg_Multiplier(int v) => SetDamageMultiplierFromAdmin(v);
 
         // Inventar Property für alte Aufrufer
