@@ -386,6 +386,7 @@ namespace RpgWpf
         /// <summary>
         /// Verwendet das aktuell im Inventar ausgewählte Item.
         /// HealPotion wirkt auf den Charakter, PoisonPotion auf den ausgewählten Gegner.
+        /// Bei Potions werden nur Fehler per Popup angezeigt, Erfolge landen nur im Log.
         /// </summary>
         private void UsePotionButton_Click(object sender, RoutedEventArgs e)
         {
@@ -415,11 +416,31 @@ namespace RpgWpf
             EnemiesList.Items.Refresh();
             InventoryList.Items.Refresh();
 
-            MessageBox.Show(
-                result,
-                "Item verwendet",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            // Nur bei Fehlern (oder bei Nicht-Potion-Items) ein Popup anzeigen
+            bool isPotion =
+                selectedItem is HealPotion ||
+                selectedItem is PoisonPotion;
+
+            // Fehlertexte enthalten typischerweise eines dieser Wörter
+            bool isErrorResult =
+                result.Contains("kein") ||
+                result.Contains("nicht") ||
+                result.Contains("konnte") ||
+                result.Contains("hatte keinen Effekt");
+
+            // Potions:
+            //   - Erfolg → kein Popup
+            //   - Fehler → Popup (Warning)
+            // Sonstige Items:
+            //   - behalten das bisherige Verhalten (Popup in jedem Fall)
+            if (!isPotion || isErrorResult)
+            {
+                MessageBox.Show(
+                    result,
+                    "Item verwendet",
+                    MessageBoxButton.OK,
+                    isErrorResult ? MessageBoxImage.Warning : MessageBoxImage.Information);
+            }
         }
 
         /// <summary>
