@@ -1,6 +1,7 @@
 ﻿using RpgWpf.GameCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Text;
 using System.Windows.Media;
 
@@ -18,7 +19,7 @@ namespace RpgWpf.GameLogic
         // ============================
 
         /// <summary> Spieler-Charakter mit Inventar und Spezialangriff-Logik. </summary>
-        public Charakter Player { get; }
+        public Charakter Player { get; private set; }
 
         /// <summary> Bekannte Gegner-Instanzen. </summary>
         public Goblin Goblin { get; }
@@ -51,13 +52,29 @@ namespace RpgWpf.GameLogic
         /// </summary>
         private readonly Dictionary<Entity, int> _defeatCounter = new Dictionary<Entity, int>();
 
+        // Startparameter des Spielers für Resets
+        private readonly string _initialVorname;
+        private readonly string _initialPlayerTag;
+        private readonly int _initialAlter;
+        private readonly int _initialInventarGroesse;
+
+        // Start-Coins (wie im Konstruktor)
+        private const int InitialCoins = 10;
+
+
         // ============================
         //   Konstruktor
         // ============================
 
-        public GameEngine(Charakter _Player)
+        public GameEngine(string vorname, string playerTag, int alter, int inventarGroesse)
         {
-            Player = _Player;
+            // Startparameter merken, damit der Spieler später zurückgesetzt werden kann
+            _initialVorname = vorname;
+            _initialPlayerTag = playerTag;
+            _initialAlter = alter;
+            _initialInventarGroesse = inventarGroesse;
+
+            Player = CreateNewPlayer();
 
             Goblin = new Goblin();
             Elf = new Elf();
@@ -78,8 +95,38 @@ namespace RpgWpf.GameLogic
             };
 
             // Startwert – kann später reduziert werden, wenn Balancing angepasst werden soll
-            Coins = 30;
+            Coins = InitialCoins;
         }
+
+        /// <summary>
+        /// Erstellt einen neuen Spieler mit den initialen Startparametern.
+        /// </summary>
+        private Charakter CreateNewPlayer()
+        {
+            return new Charakter(
+                vorname: _initialVorname,
+                playerTag: _initialPlayerTag,
+                alter: _initialAlter,
+                invSize: _initialInventarGroesse);
+        }
+
+        /// <summary>
+        /// Setzt den kompletten Spielstand des Spielers zurück:
+        /// Level, EXP, Kampfwerte, Inventar und Coins werden auf den Startzustand gesetzt.
+        /// Gegner und sonstige Engine-Daten bleiben unverändert.
+        /// </summary>
+        public void ResetPlayerProgress()
+        {
+            // Spieler komplett neu erstellen
+            Player = CreateNewPlayer();
+
+            // Coins wieder auf den Startwert setzen
+            Coins = InitialCoins;
+
+            // Falls du später noch weitere playerbezogene Zähler hast,
+            // können sie hier ebenfalls zurückgesetzt werden.
+        }
+
 
         // ============================
         //   Status-Helfer

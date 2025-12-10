@@ -701,6 +701,29 @@ namespace RpgWpf
         }
 
         /// <summary>
+        /// Setzt den kompletten Spielstand des Spielers zurück.
+        /// Öffnet zuvor eine Sicherheitsabfrage, da die Aktion nicht rückgängig gemacht werden kann.
+        /// </summary>
+        private void ResetPlayerButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Der komplette Spielstand des Spielers (Level, EXP, Coins, Inventar, Kampfwerte) wird zurückgesetzt.\n\nFortfahren?",
+                "Reset Player – Warnung",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            _engine.ResetPlayerProgress();
+
+            // Admin-Ansicht aktualisieren
+            SyncFromEngine();
+        }
+
+        /// <summary>
         /// Aktuell belegte Inventar-Slots.
         /// </summary>
         public int InventoryUsed
