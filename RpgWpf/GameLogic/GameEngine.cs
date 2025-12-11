@@ -1,9 +1,5 @@
 ﻿using RpgWpf.GameCore;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Text;
-using System.Windows.Media;
 
 namespace RpgWpf.GameLogic
 {
@@ -59,7 +55,7 @@ namespace RpgWpf.GameLogic
         private readonly int _initialInventarGroesse;
 
         // Start-Coins (wie im Konstruktor)
-        private const int InitialCoins = 10;
+        private const int InitialCoins = 20;
 
 
         // ============================
@@ -179,21 +175,10 @@ namespace RpgWpf.GameLogic
             return _defeatCounter.TryGetValue(enemy, out var count) ? count : 0;
         }
 
-        /// <summary> True, wenn der Spieler keine HP mehr hat. </summary>
-        public bool IsGameOver => Player.IsDead;
 
         // ============================
         //   Kampf-API für das UI
         // ============================
-
-        /// <summary> Komfort-Wrapper für alte Click-Handler – greift den Goblin an. </summary>
-        public string AttackGoblin() => Attack(Goblin);
-
-        /// <summary> Komfort-Wrapper für alte Click-Handler – greift die Elfe an. </summary>
-        public string AttackElf() => Attack(Elf);
-
-        /// <summary> Komfort-Wrapper für alte Click-Handler – greift den Werewolf an. </summary>
-        public string AttackWerewolf() => Attack(Werewolf);
 
         /// <summary>
         /// Führt eine komplette Kampfrunde gegen den angegebenen Gegner aus.
@@ -258,21 +243,17 @@ namespace RpgWpf.GameLogic
             sb.AppendLine($"{enemy.Name} Leben: {enemy.HP} / {enemy.MaxHP}");
 
             // Abschluss einer Kampf-Runde (bis Spieler oder Gegner tot ist)
-            if (enemyDied || playerDied)
+            if (enemyDied)
             {
                 FinishedBattles++;
+                HandleEnemyDefeated(enemy, sb);
+            }
 
-                if (enemyDied)
-                {
-                    HandleEnemyDefeated(enemy, sb);
-                }
-
-                if (playerDied)
-                {
-                    sb.AppendLine();
-                    sb.AppendLine("Du wurdest besiegt.");
-                    HandlePlayerDefeated(sb);
-                }
+            if (playerDied)
+            {
+                sb.AppendLine();
+                sb.AppendLine("Du wurdest besiegt.");
+                HandlePlayerDefeated(sb);
             }
 
             return sb.ToString();
@@ -294,7 +275,9 @@ namespace RpgWpf.GameLogic
                 return "Es wurde kein Item ausgewählt.";
             }
 
-            var inv = Player.Inventar;
+            var inventory = Player.Inventar;
+
+            //bool used = item.useItem(target ?? Player);
 
             // HealPotion: wird auf den Spieler angewendet
             if (item is HealPotion heal)
@@ -305,7 +288,7 @@ namespace RpgWpf.GameLogic
                     return "HealPotion hatte keinen Effekt (HP vermutlich bereits voll).";
                 }
 
-                inv.Remove(heal);
+                inventory.Remove(heal);
                 return "HealPotion wurde auf den Charakter angewendet.";
             }
 
@@ -323,7 +306,7 @@ namespace RpgWpf.GameLogic
                     return "PoisonPotion konnte nicht angewendet werden.";
                 }
 
-                inv.Remove(poison);
+                inventory.Remove(poison);
                 return $"{target.Name} wurde durch eine PoisonPotion verletzt.";
             }
 
@@ -331,7 +314,7 @@ namespace RpgWpf.GameLogic
             bool consumed = item.useItem(target ?? Player);
             if (consumed)
             {
-                inv.Remove(item);
+                inventory.Remove(item);
                 return $"{item.ItemName} wurde verwendet.";
             }
 

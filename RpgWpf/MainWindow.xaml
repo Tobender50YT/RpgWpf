@@ -70,6 +70,13 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#FFB0B0B0"/>
+                    <Setter Property="Foreground" Value="#FF666666"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
     </Window.Resources>
@@ -134,7 +141,7 @@
                     <!-- Spezialangriff -->
                     <TextBlock Text="{Binding DamageMultiplier, StringFormat=Multiplier (Special): {0}x}"/>
                     <TextBlock Text="{Binding SpecialAttackDamage, StringFormat=Special attack damage: {0}}"/>
-                    <TextBlock Text="{Binding SpecialProbability, StringFormat=Special chance: {0:P0}}"/>
+                    <TextBlock Text="{Binding SpecialProbability, StringFormat=Special attack chance: {0:P0}}"/>
                 </StackPanel>
             </GroupBox>
 
@@ -168,46 +175,51 @@
 
                     <!-- Upgrades -->
                     <TextBlock Text="Upgrades"
-                               FontWeight="Bold"
-                               Margin="0,0,0,4"/>
+                        FontWeight="Bold"
+                        Margin="0,0,0,4"/>
 
-                    <Button Content="Increase attack (+2) – 20 Coins"
-                            Style="{StaticResource ShopButtonStyle}"
-                            Margin="0,2,0,2"
-                            Click="BuyAttackButton_Click"/>
+                    <Button x:Name="AttackUpgradeButton"
+                        Content="Increase attack (+2) – 20 Coins"
+                        Style="{StaticResource ShopButtonStyle}"
+                        Margin="0,2,0,2"
+                        Click="BuyAttackButton_Click"/>
 
-                    <Button Content="Increase max health (+20) – 15 Coins"
-                            Style="{StaticResource ShopButtonStyle}"
-                            Margin="0,2,0,8"
-                            Click="BuyHealthButton_Click"/>
+                    <Button x:Name="HealthUpgradeButton"
+                        Content="Increase max health (+20) – 15 Coins"
+                        Style="{StaticResource ShopButtonStyle}"
+                        Margin="0,2,0,8"
+                        Click="BuyHealthButton_Click"/>
 
                     <Separator Margin="0,4,0,8"/>
 
                     <!-- Potions -->
                     <TextBlock Text="Potions"
-                               FontWeight="Bold"
-                               Margin="0,0,0,4"/>
+                        FontWeight="Bold"
+                        Margin="0,0,0,4"/>
 
-                    <Button Content="Heal Potion I – 12 Coins"
-                            Style="{StaticResource ShopButtonStyle}"
-                            Margin="0,2,0,2"
-                            Click="BuyHealPotion1Button_Click"/>
+                    <Button x:Name="HealPotion1Button"
+                        Content="Heal Potion I – 12 Coins"
+                        Style="{StaticResource ShopButtonStyle}"
+                        Margin="0,2,0,2"
+                        Click="BuyHealPotion1Button_Click"/>
 
-                    <Button Content="Heal Potion II – 20 Coins"
-                            Style="{StaticResource ShopButtonStyle}"
-                            Margin="0,2,0,8"
-                            Click="BuyHealPotion2Button_Click"/>
+                    <Button x:Name="HealPotion2Button"
+                        Content="Heal Potion II – 20 Coins"
+                        Style="{StaticResource ShopButtonStyle}"
+                        Margin="0,2,0,8"
+                        Click="BuyHealPotion2Button_Click"/>
 
-                    <Button Content="Poison Potion I – 10 Coins"
-                            Style="{StaticResource ShopButtonStyle}"
-                            Margin="0,2,0,2"
-                            Click="BuyPoisonPotion1Button_Click"/>
+                    <Button x:Name="PoisonPotion1Button"
+                        Content="Poison Potion I – 10 Coins"
+                        Style="{StaticResource ShopButtonStyle}"
+                        Margin="0,2,0,2"
+                        Click="BuyPoisonPotion1Button_Click"/>
 
-                    <Button Content="Poison Potion II – 18 Coins"
-                            Style="{StaticResource ShopButtonStyle}"
-                            Margin="0,2,0,2"
-                            Click="BuyPoisonPotion2Button_Click"/>
-
+                    <Button x:Name="PoisonPotion2Button"
+                        Content="Poison Potion II – 18 Coins"
+                        Style="{StaticResource ShopButtonStyle}"
+                        Margin="0,2,0,2"
+                        Click="BuyPoisonPotion2Button_Click"/>
                 </StackPanel>
             </GroupBox>
         </Grid>

@@ -1,19 +1,17 @@
-﻿using System;
-
-namespace RpgWpf.GameCore
+﻿namespace RpgWpf.GameCore
 {
     /// <summary>
     /// Basis Klasse für Tränke. Konkrete Wirkung wird in abgeleiteten Klassen implementiert.
     /// </summary>
     public class Potion : IInventarItem
     {
-        public int InventarGroesse { get; }
+        public int ItemGroesse { get; }
         public string ItemName { get; }
 
         public Potion(int itemGroesse, string name)
         {
             ItemName = name;
-            InventarGroesse = Math.Max(1, itemGroesse);
+            ItemGroesse = Math.Max(1, itemGroesse);
         }
 
         /// <summary>

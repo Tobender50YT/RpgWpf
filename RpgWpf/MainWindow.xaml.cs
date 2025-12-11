@@ -309,11 +309,34 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Synchronisiert Meta-Daten (Coins) in die Bindings.
+        /// Synchronisiert Meta-Daten wie Coins in die Bindings und aktualisiert Shop-Buttons.
         /// </summary>
         private void SyncMetaToUi()
         {
             Coins = _engine.Coins;
+            UpdateShopButtonsEnabledState();
+        }
+
+        /// <summary>
+        /// Aktiviert oder deaktiviert die Shop-Buttons abhängig von der aktuellen Coin-Anzahl.
+        /// Buttons sind ausgegraut und nicht klickbar, wenn der Spieler sich das Produkt
+        /// nicht leisten kann.
+        /// </summary>
+        private void UpdateShopButtonsEnabledState()
+        {
+            int coins = _engine.Coins;
+
+            // Kosten laut GameEngine:
+            // Attack: 20, MaxHealth: 15, Heal I: 12, Heal II: 20, Poison I: 10, Poison II: 18
+
+            AttackUpgradeButton.IsEnabled = coins >= 20;
+            HealthUpgradeButton.IsEnabled = coins >= 15;
+
+            HealPotion1Button.IsEnabled = coins >= 12;
+            HealPotion2Button.IsEnabled = coins >= 20;
+
+            PoisonPotion1Button.IsEnabled = coins >= 10;
+            PoisonPotion2Button.IsEnabled = coins >= 18;
         }
 
         /// <summary>

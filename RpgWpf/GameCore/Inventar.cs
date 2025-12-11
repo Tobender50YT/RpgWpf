@@ -35,10 +35,10 @@ namespace RpgWpf.GameCore
         public bool Add(IInventarItem item)
         {
             if (item == null) return false;
-            if (UsedSize + item.InventarGroesse > MaxSize) return false;
+            if (UsedSize + item.ItemGroesse > MaxSize) return false;
 
             _items.Add(item);
-            UsedSize += item.InventarGroesse; // Platzverbrauch korrekt erhöhen
+            UsedSize += item.ItemGroesse; // Platzverbrauch korrekt erhöhen
             return true;
         }
 
@@ -51,7 +51,7 @@ namespace RpgWpf.GameCore
             int idx = _items.IndexOf(item);
             if (idx < 0) return false;
 
-            UsedSize -= _items[idx].InventarGroesse; // Platz wieder freigeben
+            UsedSize -= _items[idx].ItemGroesse; // Platz wieder freigeben
             _items.RemoveAt(idx);
             return true;
         }
@@ -63,7 +63,7 @@ namespace RpgWpf.GameCore
         {
             if (index < 0 || index >= _items.Count) return false;
 
-            UsedSize -= _items[index].InventarGroesse;
+            UsedSize -= _items[index].ItemGroesse;
             _items.RemoveAt(index);
             return true;
         }
@@ -105,7 +105,7 @@ namespace RpgWpf.GameCore
             for (int i = 0; i < _items.Count; i++)
             {
                 var item = _items[i];
-                Console.Write($"[{i}] {item.ItemName} - {item.InventarGroesse}");
+                Console.Write($"[{i}] {item.ItemName} - {item.ItemGroesse}");
                 if (i < _items.Count - 1)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;

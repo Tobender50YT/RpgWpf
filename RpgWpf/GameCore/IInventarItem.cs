@@ -5,7 +5,7 @@
     /// </summary>
     public interface IInventarItem
     {
-        int InventarGroesse { get; }
+        int ItemGroesse { get; }
         string ItemName { get; }
         bool useItem(Entity entity);
     }

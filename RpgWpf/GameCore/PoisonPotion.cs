@@ -15,7 +15,7 @@
             if (entity == null) return false;
             if (entity.IsDead) return false; // Ziel schon tot → nicht verbrauchen
 
-            double dmg = _damage * InventarGroesse;
+            double dmg = _damage * ItemGroesse;
             entity.TakeDamage(dmg);
             return true; // Trank wurde eingesetzt
         }

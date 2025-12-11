@@ -14,7 +14,7 @@
         {
             if (entity == null) return false;
             // Heilung skaliert mit Inventar Größe
-            return entity.Heal(_healAmount * InventarGroesse);
+            return entity.Heal(_healAmount * ItemGroesse);
         }
     }
 }
