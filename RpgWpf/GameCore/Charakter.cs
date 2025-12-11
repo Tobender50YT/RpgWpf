@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows.Media;
-
-namespace RpgWpf.GameCore
+﻿namespace RpgWpf.GameCore
 {
     /// <summary>
     /// Spieler-Charakter inkl. Inventar, Spezialangriff-Logik und Level-/Erfahrungssystem.
@@ -54,7 +51,7 @@ namespace RpgWpf.GameCore
         /// <summary>
         /// Chance in Prozent (0..100), dass der Spezialangriff in dieser Runde triggert.
         /// </summary>
-        public int SpecialAttackChancePercent { get; set; } = 20; // vormals "5" via Next(5)==0
+        public int SpecialAttackChancePercent { get; set; } = 20;
 
         // ============================
         //   Level- und Erfahrungssystem
@@ -116,7 +113,7 @@ namespace RpgWpf.GameCore
         /// </summary>
         public bool RollSpecialAttack()
         {
-            int roll = _rng.Next(100); // 0..99
+            int roll = _rng.Next(100);
             return roll < SpecialAttackChancePercent;
         }
 
@@ -141,30 +138,20 @@ namespace RpgWpf.GameCore
             {
                 return false;
             }
-
             CurrentExp += amount;
             bool leveledUp = false;
-
-            // Mehrere Level-Ups hintereinander ermöglichen (bei vielen EXP auf einmal)
             while (CurrentExp >= ExpToNextLevel)
             {
                 CurrentExp -= ExpToNextLevel;
                 Level++;
                 leveledUp = true;
-
-                // EXP-Anforderung für das nächste Level anhand der Progression neu berechnen
                 ExpToNextLevel = CalculateExpRequirementForLevel(Level);
-
-                // Inventarkapazität an das neue Level anpassen
                 UpdateInventoryCapacityFromLevel();
             }
-
             if (leveledUp)
             {
-                // HP nach Level-Up vollständig auffüllen
                 SetHP(MaxHP);
             }
-
             return leveledUp;
         }
 
@@ -185,15 +172,10 @@ namespace RpgWpf.GameCore
             {
                 level = 1;
             }
-
             Level = level;
             CurrentExp = 0;
             ExpToNextLevel = CalculateExpRequirementForLevel(Level);
-
-            // Inventarkapazität an das gesetzte Level anpassen
             UpdateInventoryCapacityFromLevel();
-
-            // HP wie bei normalen Level-Ups voll auffüllen
             SetHP(MaxHP);
         }
 
@@ -208,12 +190,10 @@ namespace RpgWpf.GameCore
             {
                 currentExp = 0;
             }
-
             if (currentExp > ExpToNextLevel)
             {
                 currentExp = ExpToNextLevel;
             }
-
             CurrentExp = currentExp;
         }
 
@@ -227,12 +207,10 @@ namespace RpgWpf.GameCore
             {
                 percent = 0;
             }
-
             if (percent > 100)
             {
                 percent = 100;
             }
-
             SpecialAttackChancePercent = percent;
         }
 
@@ -248,11 +226,7 @@ namespace RpgWpf.GameCore
             {
                 return 100;
             }
-
             double required = 100;
-
-            // Progression wird so berechnet, wie sie in GainExp inkrementell aufgebaut wird:
-            // Start bei 100, für jedes Level: ExpToNextLevel = (int)(ExpToNextLevel * 1.3)
             for (int i = 1; i < level; i++)
             {
                 required = (int)(required * 1.3);
@@ -261,7 +235,6 @@ namespace RpgWpf.GameCore
                     required = 1;
                 }
             }
-
             return (int)required;
         }
 
@@ -274,37 +247,5 @@ namespace RpgWpf.GameCore
             int newMax = _baseInventorySize + (Level - 1) * InventorySlotsPerLevel;
             Inventar.SetMaxSize(newMax);
         }
-
-        // ============================
-        //   Abwärtskompatible Wrapper
-        // ============================
-
-        [Obsolete("Nutze stattdessen Vorname")]
-        public string getVorname() => Vorname;
-
-        [Obsolete("Nutze stattdessen PlayerTag")]
-        public string getplayer_tag() => PlayerTag;
-
-        [Obsolete("Nutze stattdessen Alter")]
-        public int getAlter() => Alter;
-
-        [Obsolete("Nutze stattdessen GetSpecialAttackDamage()")]
-        public double getSpecialAttack_dmg() => GetSpecialAttackDamage();
-
-        [Obsolete("Nutze stattdessen RollSpecialAttack()")]
-        public bool SpecialAttack() => RollSpecialAttack();
-
-        [Obsolete("Nutze stattdessen DamageMultiplier")]
-        public int getdmg_Multiplier() => DamageMultiplier;
-
-        [Obsolete("Nutze stattdessen SetDamageMultiplierFromAdmin(int)")]
-        public void setdmg_Multiplier(int v) => SetDamageMultiplierFromAdmin(v);
-
-        // Inventar Property für alte Aufrufer
-        [Obsolete("Nutze stattdessen Inventar")]
-        public Inventar inventar => Inventar;
-
-        [Obsolete("Nutze stattdessen PlayerTag")]
-        public string player_tag => PlayerTag;
     }
 }

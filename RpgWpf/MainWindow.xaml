@@ -11,20 +11,20 @@
 
         <!-- Gemeinsamer Stil für alle GroupBoxen (Rahmen und Überschriftgröße) -->
         <Style TargetType="GroupBox">
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="BorderThickness" Value="3" />
+            <Setter Property="FontSize" Value="16" />
         </Style>
 
-        <!-- Gemeinsamer Stil für Haupt-Buttons (rechts unten) -->
+        <!-- Standard-Stil für Haupt-Buttons (z. B. Angreifen, Admin, Exit) -->
         <Style TargetType="Button">
-            <Setter Property="Padding" Value="10,7"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Background" Value="#FF4A90E2"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="MinWidth" Value="180"/>
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Background" Value="#FF4A90E2" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="MinWidth" Value="180" />
 
             <Setter Property="Template">
                 <Setter.Value>
@@ -33,7 +33,7 @@
                                 Background="{TemplateBinding Background}"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                                              VerticalAlignment="Center" />
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -41,22 +41,22 @@
 
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#FF1E6CC7"/>
+                    <Setter Property="Background" Value="#FF1E6CC7" />
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#FF0F4C94"/>
+                    <Setter Property="Background" Value="#FF0F4C94" />
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <!-- Stil für Shop-Buttons (minimal kleiner, andere Farbe) -->
+        <!-- Spezieller Stil für Shop-Buttons (leicht andere Größe/Farbe) -->
         <Style x:Key="ShopButtonStyle"
                TargetType="Button"
                BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="MinWidth" Value="170"/>
-            <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="Background" Value="#FF7AB6F2"/>
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="MinWidth" Value="170" />
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="Background" Value="#FF7AB6F2" />
 
             <Setter Property="Template">
                 <Setter.Value>
@@ -65,16 +65,18 @@
                                 Background="{TemplateBinding Background}"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                                              VerticalAlignment="Center" />
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+
             <Style.Triggers>
+                <!-- Deaktivierte Shop-Buttons grau darstellen (z. B. bei zu wenig Coins) -->
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="#FFB0B0B0"/>
-                    <Setter Property="Foreground" Value="#FF666666"/>
-                    <Setter Property="Cursor" Value="Arrow"/>
+                    <Setter Property="Background" Value="#FFB0B0B0" />
+                    <Setter Property="Foreground" Value="#FF666666" />
+                    <Setter Property="Cursor" Value="Arrow" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -87,9 +89,9 @@
          Row 2: Inventory / Game log / Buttons -->
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!-- ======================= -->
@@ -97,35 +99,35 @@
         <!-- ======================= -->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Character-Box (links) -->
+            <!-- Character-Bereich (linke Spalte) -->
             <GroupBox Grid.Column="0"
                       Margin="0,0,10,5">
                 <GroupBox.Header>
-                    <TextBlock Text="Character"/>
+                    <TextBlock Text="Character" />
                 </GroupBox.Header>
 
                 <StackPanel Margin="10">
                     <!-- Basisdaten -->
-                    <TextBlock Text="{Binding PlayerTag, StringFormat=Player: {0}}"/>
+                    <TextBlock Text="{Binding PlayerTag, StringFormat=Player: {0}}" />
                     <TextBlock Text="{Binding Alter, StringFormat=Age: {0}}"
-                               Margin="0,5,0,0"/>
+                               Margin="0,5,0,0" />
 
                     <!-- Level und Erfahrung -->
                     <TextBlock Text="{Binding Level, StringFormat=Level: {0}}"
-                               Margin="0,5,0,0"/>
+                               Margin="0,5,0,0" />
                     <TextBlock Margin="0,0,0,5">
-                        <Run Text="EXP: "/>
-                        <Run Text="{Binding CurrentExp}"/>
-                        <Run Text=" / "/>
-                        <Run Text="{Binding ExpToNextLevel}"/>
+                        <Run Text="EXP: " />
+                        <Run Text="{Binding CurrentExp}" />
+                        <Run Text=" / " />
+                        <Run Text="{Binding ExpToNextLevel}" />
                     </TextBlock>
 
-                    <Separator Margin="0,5,0,5"/>
+                    <Separator Margin="0,5,0,5" />
 
                     <!-- Lebenspunkte und Angriff -->
                     <TextBlock>
@@ -135,91 +137,92 @@
                         <Run Text="{Binding MaxHP}" />
                     </TextBlock>
                     <TextBlock Text="{Binding AttackDamage, StringFormat=Attack damage: {0}}"
-                               Margin="0,5,0,0"/>
-                    <Separator Margin="0,5,0,5"/>
+                               Margin="0,5,0,0" />
 
-                    <!-- Spezialangriff -->
-                    <TextBlock Text="{Binding DamageMultiplier, StringFormat=Multiplier (Special): {0}x}"/>
-                    <TextBlock Text="{Binding SpecialAttackDamage, StringFormat=Special attack damage: {0}}"/>
-                    <TextBlock Text="{Binding SpecialProbability, StringFormat=Special attack chance: {0:P0}}"/>
+                    <Separator Margin="0,5,0,5" />
+
+                    <!-- Spezialangriffswerte -->
+                    <TextBlock Text="{Binding DamageMultiplier, StringFormat=Multiplier (Special): {0}x}" />
+                    <TextBlock Text="{Binding SpecialAttackDamage, StringFormat=Special attack damage: {0}}" />
+                    <TextBlock Text="{Binding SpecialProbability, StringFormat=Special attack chance: {0:P0}}" />
                 </StackPanel>
             </GroupBox>
 
-            <!-- Enemy-Box (Mitte) -->
+            <!-- Enemy-Anzeige (mittlere Spalte) -->
             <GroupBox Header="Enemy"
                       Grid.Column="1"
                       Margin="0,0,10,5">
                 <StackPanel Margin="10">
-                    <TextBlock Text="{Binding CurrentEnemyName, StringFormat=Name: {0}}"/>
+                    <TextBlock Text="{Binding CurrentEnemyName, StringFormat=Name: {0}}" />
                     <TextBlock Text="{Binding CurrentEnemyHP, StringFormat=HP: {0}}"
-                               Margin="0,5,0,0"/>
-                    <TextBlock Text="{Binding CurrentEnemyMaxHP, StringFormat=Max. HP: {0}}"/>
+                               Margin="0,5,0,0" />
+                    <TextBlock Text="{Binding CurrentEnemyMaxHP, StringFormat=Max. HP: {0}}" />
                     <TextBlock Text="{Binding CurrentEnemyAttack, StringFormat=Attack: {0}}"
-                               Margin="0,5,0,0"/>
+                               Margin="0,5,0,0" />
                 </StackPanel>
             </GroupBox>
 
-            <!-- Shop-Box (rechts) -->
+            <!-- Shop-Bereich (rechte Spalte) -->
             <GroupBox Header="Shop"
                       Grid.Column="2"
                       Margin="0,0,0,5">
                 <StackPanel Margin="10">
 
-                    <!-- Anzeige der aktuellen Währung und Werte -->
-                    <TextBlock Text="{Binding Coins, StringFormat=Coins: {0}}"/>
-                    <Separator Margin="0,5,0,5"/>
-                    <TextBlock Text="{Binding AttackDamage, StringFormat=Current attack: {0}}"/>
-                    <TextBlock Text="{Binding MaxHP, StringFormat=Max health: {0}}"/>
+                    <!-- Anzeige der aktuellen Währung und Basiswerte -->
+                    <TextBlock Text="{Binding Coins, StringFormat=Coins: {0}}" />
+                    <Separator Margin="0,5,0,5" />
+                    <TextBlock Text="{Binding AttackDamage, StringFormat=Current attack: {0}}" />
+                    <TextBlock Text="{Binding MaxHP, StringFormat=Max health: {0}}" />
 
-                    <Separator Margin="0,10,0,10"/>
+                    <Separator Margin="0,10,0,10" />
 
-                    <!-- Upgrades -->
+                    <!-- Upgrade-Bereich -->
                     <TextBlock Text="Upgrades"
-                        FontWeight="Bold"
-                        Margin="0,0,0,4"/>
+                               FontWeight="Bold"
+                               Margin="0,0,0,4" />
 
                     <Button x:Name="AttackUpgradeButton"
-                        Content="Increase attack (+2) – 20 Coins"
-                        Style="{StaticResource ShopButtonStyle}"
-                        Margin="0,2,0,2"
-                        Click="BuyAttackButton_Click"/>
+                            Content="Increase attack (+2) – 20 Coins"
+                            Style="{StaticResource ShopButtonStyle}"
+                            Margin="0,2,0,2"
+                            Click="BuyAttackButton_Click" />
 
                     <Button x:Name="HealthUpgradeButton"
-                        Content="Increase max health (+20) – 15 Coins"
-                        Style="{StaticResource ShopButtonStyle}"
-                        Margin="0,2,0,8"
-                        Click="BuyHealthButton_Click"/>
+                            Content="Increase max health (+20) – 15 Coins"
+                            Style="{StaticResource ShopButtonStyle}"
+                            Margin="0,2,0,8"
+                            Click="BuyHealthButton_Click" />
 
-                    <Separator Margin="0,4,0,8"/>
+                    <Separator Margin="0,4,0,8" />
 
-                    <!-- Potions -->
+                    <!-- Potion-Angebot -->
                     <TextBlock Text="Potions"
-                        FontWeight="Bold"
-                        Margin="0,0,0,4"/>
+                               FontWeight="Bold"
+                               Margin="0,0,0,4" />
 
                     <Button x:Name="HealPotion1Button"
-                        Content="Heal Potion I – 12 Coins"
-                        Style="{StaticResource ShopButtonStyle}"
-                        Margin="0,2,0,2"
-                        Click="BuyHealPotion1Button_Click"/>
+                            Content="Heal Potion I – 12 Coins"
+                            Style="{StaticResource ShopButtonStyle}"
+                            Margin="0,2,0,2"
+                            Click="BuyHealPotion1Button_Click" />
 
                     <Button x:Name="HealPotion2Button"
-                        Content="Heal Potion II – 20 Coins"
-                        Style="{StaticResource ShopButtonStyle}"
-                        Margin="0,2,0,8"
-                        Click="BuyHealPotion2Button_Click"/>
+                            Content="Heal Potion II – 20 Coins"
+                            Style="{StaticResource ShopButtonStyle}"
+                            Margin="0,2,0,8"
+                            Click="BuyHealPotion2Button_Click" />
 
                     <Button x:Name="PoisonPotion1Button"
-                        Content="Poison Potion I – 10 Coins"
-                        Style="{StaticResource ShopButtonStyle}"
-                        Margin="0,2,0,2"
-                        Click="BuyPoisonPotion1Button_Click"/>
+                            Content="Poison Potion I – 10 Coins"
+                            Style="{StaticResource ShopButtonStyle}"
+                            Margin="0,2,0,2"
+                            Click="BuyPoisonPotion1Button_Click" />
 
                     <Button x:Name="PoisonPotion2Button"
-                        Content="Poison Potion II – 18 Coins"
-                        Style="{StaticResource ShopButtonStyle}"
-                        Margin="0,2,0,2"
-                        Click="BuyPoisonPotion2Button_Click"/>
+                            Content="Poison Potion II – 18 Coins"
+                            Style="{StaticResource ShopButtonStyle}"
+                            Margin="0,2,0,2"
+                            Click="BuyPoisonPotion2Button_Click" />
                 </StackPanel>
             </GroupBox>
         </Grid>
@@ -237,7 +240,7 @@
                      BorderThickness="0">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
+                        <StackPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
@@ -249,12 +252,12 @@
                                 BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="{Binding Name}"
-                                           FontWeight="Bold"/>
+                                           FontWeight="Bold" />
                                 <TextBlock>
-                                    <Run Text="HP: "/>
-                                    <Run Text="{Binding HP, Mode=OneWay}"/>
-                                    <Run Text=" / "/>
-                                    <Run Text="{Binding MaxHP, Mode=OneWay}"/>
+                                    <Run Text="HP: " />
+                                    <Run Text="{Binding HP, Mode=OneWay}" />
+                                    <Run Text=" / " />
+                                    <Run Text="{Binding MaxHP, Mode=OneWay}" />
                                 </TextBlock>
                             </StackPanel>
                         </Border>
@@ -269,38 +272,38 @@
         <!-- ================================== -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <!-- Inventory -->
-                <ColumnDefinition Width="2*"/>
-                <!-- Game log -->
-                <ColumnDefinition Width="2*"/>
-                <!-- Buttons -->
-                <ColumnDefinition Width="Auto"/>
+                <!-- Inventar -->
+                <ColumnDefinition Width="2*" />
+                <!-- Game-Log -->
+                <ColumnDefinition Width="2*" />
+                <!-- Steuer-Buttons -->
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Inventory (links unten) -->
+            <!-- Inventory (linker Bereich unten) -->
             <GroupBox Grid.Column="0"
-                Margin="0,0,10,0">
+                      Margin="0,0,10,0">
 
-                <!-- Dynamischer Header: "Inventory 5/24" -->
+                <!-- Dynamischer Header, z. B. "Inventory 5/24" -->
                 <GroupBox.Header>
                     <TextBlock>
-                        <Run Text="Inventory "/>
-                        <Run Text="{Binding InventoryUsed}"/>
-                        <Run Text="/"/>
-                        <Run Text="{Binding InventoryMax}"/>
+                        <Run Text="Inventory " />
+                        <Run Text="{Binding InventoryUsed}" />
+                        <Run Text="/" />
+                        <Run Text="{Binding InventoryMax}" />
                     </TextBlock>
                 </GroupBox.Header>
 
                 <Grid>
                     <ListBox x:Name="InventoryList"
-                        ItemsSource="{Binding InventoryItems}">
+                             ItemsSource="{Binding InventoryItems}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding ItemName}"/>
-                                    <TextBlock Text=" ("/>
-                                    <TextBlock Text="{Binding InventarGroesse}"/>
-                                    <TextBlock Text=")"/>
+                                    <TextBlock Text="{Binding ItemName}" />
+                                    <TextBlock Text=" (" />
+                                    <TextBlock Text="{Binding InventarGroesse}" />
+                                    <TextBlock Text=")" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -308,7 +311,7 @@
                 </Grid>
             </GroupBox>
 
-            <!-- Game-Log (mittig unten) -->
+            <!-- Game-Log (mittlerer Bereich unten) -->
             <GroupBox Header="Game log"
                       Grid.Column="1"
                       Margin="0,0,10,0">
@@ -318,11 +321,11 @@
                              IsReadOnly="True"
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
-                             HorizontalScrollBarVisibility="Auto"/>
+                             HorizontalScrollBarVisibility="Auto" />
                 </Grid>
             </GroupBox>
 
-            <!-- Buttons (rechts unten) -->
+            <!-- Buttons (rechter Bereich unten) -->
             <StackPanel Grid.Column="2"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
@@ -331,33 +334,32 @@
                         Content="Attack"
                         Width="200"
                         Margin="0,4,0,4"
-                        Click="AttackButton_Click"/>
+                        Click="AttackButton_Click" />
 
                 <Button x:Name="UsePotionButton"
                         Content="Use potion"
                         Width="200"
                         Margin="0,4,0,4"
-                        Click="UsePotionButton_Click"/>
+                        Click="UsePotionButton_Click" />
 
-                <!-- Optische Trennung zwischen Kampf- und Verwaltungsfunktionen -->
+                <!-- Visuelle Trennung zwischen Kampf- und Verwaltungsfunktionen -->
                 <Separator Margin="0,8,0,8"
                            Width="200"
                            Height="3"
-                           Background="Gray"/>
+                           Background="Gray" />
 
                 <Button x:Name="AdminMenuButton"
                         Content="Admin menu"
                         Width="200"
                         Margin="0,4,0,4"
-                        Click="AdminMenuButton_Click"/>
+                        Click="AdminMenuButton_Click" />
 
                 <Button x:Name="ExitButton"
                         Content="Exit game"
                         Width="200"
                         Margin="0,4,0,4"
-                        Click="ExitButton_Click"/>
+                        Click="ExitButton_Click" />
             </StackPanel>
         </Grid>
-
     </Grid>
 </Window>

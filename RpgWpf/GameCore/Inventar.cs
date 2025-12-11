@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace RpgWpf.GameCore
+﻿namespace RpgWpf.GameCore
 {
     /// <summary>
     /// Einfaches, größenbasiertes Inventar. Jedes Item hat eine Größe; die Summe darf MaxSize nicht überschreiten.
@@ -35,10 +31,10 @@ namespace RpgWpf.GameCore
         public bool Add(IInventarItem item)
         {
             if (item == null) return false;
-            if (UsedSize + item.ItemGroesse > MaxSize) return false;
+            if (UsedSize + item.InventarGroesse > MaxSize) return false;
 
             _items.Add(item);
-            UsedSize += item.ItemGroesse; // Platzverbrauch korrekt erhöhen
+            UsedSize += item.InventarGroesse;
             return true;
         }
 
@@ -51,7 +47,7 @@ namespace RpgWpf.GameCore
             int idx = _items.IndexOf(item);
             if (idx < 0) return false;
 
-            UsedSize -= _items[idx].ItemGroesse; // Platz wieder freigeben
+            UsedSize -= _items[idx].InventarGroesse;
             _items.RemoveAt(idx);
             return true;
         }
@@ -63,7 +59,7 @@ namespace RpgWpf.GameCore
         {
             if (index < 0 || index >= _items.Count) return false;
 
-            UsedSize -= _items[index].ItemGroesse;
+            UsedSize -= _items[index].InventarGroesse;
             _items.RemoveAt(index);
             return true;
         }
@@ -89,7 +85,6 @@ namespace RpgWpf.GameCore
             {
                 newMaxSize = UsedSize;
             }
-
             MaxSize = Math.Max(1, newMaxSize);
         }
 
@@ -105,7 +100,7 @@ namespace RpgWpf.GameCore
             for (int i = 0; i < _items.Count; i++)
             {
                 var item = _items[i];
-                Console.Write($"[{i}] {item.ItemName} - {item.ItemGroesse}");
+                Console.Write($"[{i}] {item.ItemName} - {item.InventarGroesse}");
                 if (i < _items.Count - 1)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;

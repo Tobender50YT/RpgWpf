@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RpgWpf.GameCore
+﻿namespace RpgWpf.GameCore
 {
     /// <summary>
     /// Basisklasse für alle Einheiten (Spieler & Gegner). Enthält HP Verwaltung
@@ -78,15 +76,5 @@ namespace RpgWpf.GameCore
         {
             BaseAttackDamage = Math.Max(0, value);
         }
-
-        // ==== Abwärtskompatible Wrapper (alte API Namen) ====
-        [Obsolete("Nutze stattdessen MaxHP")] public double getVollHP() => MaxHP;
-        [Obsolete("Nutze stattdessen SetMaxHP(double)")] public void setVollHP(double hp) => SetMaxHP(hp);
-        [Obsolete("Nutze stattdessen BaseAttackDamage")] public double getUrspAttack_dmg() => BaseAttackDamage;
-        [Obsolete("Nutze stattdessen SetHP(double)")] public void setHP(double hp) => SetHP(hp);
-        [Obsolete("Nutze stattdessen HP")] public double getHP() => HP;
-        [Obsolete("Nutze stattdessen SetBaseAttack(double)")] public void setAttack_dmg(double dmg) => SetBaseAttack(dmg);
-        [Obsolete("Nutze stattdessen GetAttackDamage()")] public virtual double getAttack_damage() => GetAttackDamage();
-        [Obsolete("Nutze stattdessen TakeDamage(double)")] public bool getDamage(double dmg) => TakeDamage(dmg);
     }
 }

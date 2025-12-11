@@ -14,13 +14,13 @@
     <Window.Resources>
 
         <!-- Gemeinsamer Button-Stil für das Admin-Panel:
-             Farbe bleibt Standard, nur Form/Größe kompakter -->
+             Farbe bleibt Standard, Form ist kompakter. -->
         <Style TargetType="Button">
-            <!-- Weniger Innenabstand → Buttons werden flacher -->
+            <!-- Kleinerer Innenabstand → flachere Buttons -->
             <Setter Property="Padding" Value="2,1" />
-            <!-- Kleinere Schrift → reduziert Gesamthöhe -->
+            <!-- Kleinere Schriftart reduziert Gesamthöhe -->
             <Setter Property="FontSize" Value="12" />
-            <!-- Weniger Außenabstand -->
+            <!-- Geringer Außenabstand -->
             <Setter Property="Margin" Value="0,1,0,1" />
             <Setter Property="Cursor" Value="Hand" />
 
@@ -60,7 +60,7 @@
                   Grid.Column="0"
                   Margin="0,0,10,0">
 
-            <!-- ScrollViewer, falls es bei kleineren Auflösungen zu voll wird -->
+            <!-- ScrollViewer, falls die Inhalte bei kleinerer Auflösung nicht vollständig sichtbar sind -->
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel Margin="8">
 
@@ -90,7 +90,7 @@
 
                     <Separator Margin="0,10,0,6" />
 
-                    <!-- Admin-Aktionen für Player -->
+                    <!-- Admin-Aktionen für den Player -->
                     <TextBlock Text="Admin actions"
                                FontWeight="Bold"
                                Margin="0,0,0,4" />
@@ -287,16 +287,17 @@
                                 Width="55"
                                 Click="SetSpecialChanceButton_Click" />
                     </StackPanel>
+
                     <!-- Gefährliche Admin-Aktion: kompletter Reset des Spielers -->
                     <Button Content="Reset Player"
-                        Margin="0,10,0,0"
-                        Padding="4,2"
-                        FontWeight="Bold"
-                        Foreground="White"
-                        Background="#FFB00000"
-                        BorderBrush="#FF700000"
-                        ToolTip="Setzt den kompletten Spielstand des Spielers zurück."
-                        Click="ResetPlayerButton_Click" />
+                            Margin="0,10,0,0"
+                            Padding="4,2"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Background="#FFB00000"
+                            BorderBrush="#FF700000"
+                            ToolTip="Setzt den kompletten Spielstand des Spielers zurück."
+                            Click="ResetPlayerButton_Click" />
                 </StackPanel>
             </ScrollViewer>
         </GroupBox>
@@ -316,7 +317,7 @@
                          SelectedItem="{Binding SelectedEnemy, Mode=TwoWay}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <!-- Nur Anzeige, kein Zurückschreiben auf Name -->
+                            <!-- Nur Anzeige, kein Zurückschreiben des Namens -->
                             <TextBlock Text="{Binding Name, Mode=OneWay}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -377,6 +378,7 @@
                     <Run Text="{Binding InventoryMax}" />
                 </TextBlock>
             </GroupBox.Header>
+
             <StackPanel Margin="8">
 
                 <!-- Inventarübersicht -->
@@ -440,6 +442,5 @@
 
             </StackPanel>
         </GroupBox>
-
     </Grid>
 </Window>

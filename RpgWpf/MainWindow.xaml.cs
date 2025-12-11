@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using RpgWpf.GameCore;
+using RpgWpf.GameLogic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Threading;
-using RpgWpf.GameCore;
-using RpgWpf.GameLogic;
 
 namespace RpgWpf
 {
@@ -27,11 +25,10 @@ namespace RpgWpf
         //   Properties für Bindings
         // ============================
 
-        // --- Character-Box (links) ---
-
+        // --- Charakter-Box (links) ---
         /// <summary>
         /// Kennzeichnet, ob der aktuell gespielte Charakter Admin-Rechte hat.
-        /// Wird aus der GameEngine gespiegelt.
+        /// Wird aus der GameEngine gespiegelt (steuert Sichtbarkeit des Admin-Buttons).
         /// </summary>
         public bool IsAdmin
         {
@@ -40,7 +37,6 @@ namespace RpgWpf
             {
                 field = value;
                 OnPropertyChanged(nameof(IsAdmin));
-
                 // Sichtbarkeit des Admin-Buttons direkt anpassen
                 AdminMenuButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
             }
@@ -89,7 +85,7 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Spezialangriffs-Wahrscheinlichkeit 0..1 (für {0:P0} in XAML).
+        /// Spezialangriffs-Wahrscheinlichkeit 0..1 (Formatierung via {0:P0} in XAML).
         /// </summary>
         public double SpecialProbability
         {
@@ -97,29 +93,28 @@ namespace RpgWpf
             set { field = value; OnPropertyChanged(nameof(SpecialProbability)); }
         }
 
-        /// <summary> Aktuelles Spielerlevel. </summary>
+        /// <summary>Aktuelles Spielerlevel.</summary>
         public int Level
         {
             get;
             set { field = value; OnPropertyChanged(nameof(Level)); }
         }
 
-        /// <summary> Aktuelle Erfahrungspunkte im aktuellen Level. </summary>
+        /// <summary>Aktuelle Erfahrungspunkte im aktuellen Level.</summary>
         public int CurrentExp
         {
             get;
             set { field = value; OnPropertyChanged(nameof(CurrentExp)); }
         }
 
-        /// <summary> Benötigte Erfahrungspunkte bis zum nächsten Level. </summary>
+        /// <summary>Benötigte Erfahrungspunkte bis zum nächsten Level.</summary>
         public int ExpToNextLevel
         {
             get;
             set { field = value; OnPropertyChanged(nameof(ExpToNextLevel)); }
         }
 
-        // --- Enemy-Box (Mitte) ---
-
+        // --- Gegner-Box (Mitte) ---
         public string CurrentEnemyName
         {
             get;
@@ -144,6 +139,7 @@ namespace RpgWpf
             set { field = value; OnPropertyChanged(nameof(CurrentEnemyAttack)); }
         }
 
+        // --- Inventar-Anzeige (untere linke Box) ---
         public int InventoryUsed
         {
             get;
@@ -157,30 +153,22 @@ namespace RpgWpf
         }
 
         // --- Shop-Box (rechts) ---
-
-        /// <summary>
-        /// Aktuelle Coin-Anzahl für die Shop-Anzeige.
-        /// </summary>
+        /// <summary>Aktuelle Coin-Anzahl für die Shop-Anzeige.</summary>
         public int Coins
         {
             get;
             set { field = value; OnPropertyChanged(nameof(Coins)); }
         }
 
-        // --- Enemies-Übersicht (mittlere Zeile) ---
-
-        /// <summary>
-        /// Liste aller sichtbaren Gegner für EnemiesList.
-        /// </summary>
+        // --- Gegnerliste (mittlere Zeile) ---
+        /// <summary>Liste aller sichtbaren Gegner (für EnemiesList).</summary>
         public List<Entity> Enemies
         {
             get;
             private set { field = value; OnPropertyChanged(nameof(Enemies)); }
         }
 
-        /// <summary>
-        /// Aktuell im UI ausgewählter Gegner.
-        /// </summary>
+        /// <summary>Aktuell im UI ausgewählter Gegner.</summary>
         public Entity SelectedEnemy
         {
             get;
@@ -193,10 +181,7 @@ namespace RpgWpf
         }
 
         // --- Inventar-Anzeige (untere linke Box) ---
-
-        /// <summary>
-        /// Liste der Items im Inventar des Spielers.
-        /// </summary>
+        /// <summary>Liste der Items im Inventar des Spielers.</summary>
         public List<IInventarItem> InventoryItems
         {
             get;
@@ -206,7 +191,6 @@ namespace RpgWpf
         // ============================
         //   Konstruktor
         // ============================
-
         public MainWindow()
         {
             InitializeComponent();
@@ -214,38 +198,33 @@ namespace RpgWpf
             // DataContext für Bindings setzen
             DataContext = this;
 
-            // Engine erzeugen
+            // GameEngine erzeugen und initialisieren
             _engine = new GameEngine(
                 vorname: "Tobi",
                 playerTag: "Test_Player1",
                 alter: 21,
                 inventarGroesse: 8
             );
-
             _engine.Player.IsAdmin = true;
 
             // Admin-Status in die UI spiegeln
             IsAdmin = _engine.Player.IsAdmin;
 
-            // Gegnerliste aus der Engine übernehmen (inklusive Slime, Orc, Dragon usw.)
+            // Gegnerliste aus der Engine übernehmen (inkl. Slime, Orc, Dragon etc.)
             Enemies = new List<Entity>(_engine.Enemies);
-
-            // Standard-Gegner auswählen (erster Eintrag in der Liste, falls vorhanden)
             SelectedEnemy = Enemies.Count > 0 ? Enemies[0] : null;
 
-            // UI initial synchronisieren
+            // UI mit Startwerten synchronisieren
             SyncCharacterToUi();
             SyncInventoryToUi();
             SyncCurrentEnemyToUi();
             SyncMetaToUi();
 
-            // Startmeldung in den Game-Log schreiben
+            // Willkommensnachricht und Status der Engine in den Game-Log schreiben
             AppendLog("Willkommen in deinem WPF-RPG!");
-            AppendLog(string.Empty);
             AppendLog(_engine.GetStatusText());
 
-            // Einfacher Auto-Heal-Timer:
-            // alle 3 Sekunden wird 1 HP regeneriert, bis das Maximum erreicht ist.
+            // Auto-Heal Timer initialisieren (regeneriert alle 3 Sekunden 1 HP)
             _hpRegenTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(3)
@@ -257,43 +236,30 @@ namespace RpgWpf
         // ============================
         //   Hilfsmethoden (UI-Sync)
         // ============================
-
         /// <summary>
         /// Tick-Handler für die automatische Lebenspunkte-Regeneration.
-        /// Erhöht alle 2 Sekunden die HP um 1, solange der Spieler lebt
-        /// und noch nicht voll geheilt ist.
+        /// Erhöht alle 3 Sekunden die HP um 1, solange der Spieler lebt und noch nicht voll geheilt ist.
         /// </summary>
         private void HpRegenTimer_Tick(object? sender, EventArgs e)
         {
             var player = _engine.Player;
+            if (player.HP <= 0) return;               // Kein Auto-Heal, wenn tot
+            if (player.HP >= player.MaxHP) return;    // Kein Auto-Heal, wenn volle HP
 
-            // Kein Auto-Heal, wenn der Spieler tot ist
-            if (player.HP <= 0)
-            {
-                return;
-            }
-
-            // Kein Auto-Heal, wenn bereits volle HP
-            if (player.HP >= player.MaxHP)
-            {
-                return;
-            }
-
-            // 1 HP regenerieren, aber nie über MaxHP hinaus
-            var newHp = Math.Min(player.MaxHP, player.HP + 1);
+            // 1 HP regenerieren (maximal bis zur vollen HP)
+            double newHp = Math.Min(player.MaxHP, player.HP + 1);
             player.SetHP(newHp);
 
-            // Character-Box der UI aktualisieren
+            // Charakter-Display aktualisieren
             SyncCharacterToUi();
         }
 
         /// <summary>
-        /// Synchronisiert grundlegende Charakterdaten (inkl. Level/EXP) in die Bindings.
+        /// Synchronisiert die grundlegenden Charakterdaten (inkl. Level/EXP) in die Bindings.
         /// </summary>
         private void SyncCharacterToUi()
         {
             var p = _engine.Player;
-
             PlayerTag = p.PlayerTag;
             Alter = p.Alter;
             HP = p.HP;
@@ -302,14 +268,13 @@ namespace RpgWpf
             DamageMultiplier = p.DamageMultiplier;
             SpecialAttackDamage = p.GetSpecialAttackDamage();
             SpecialProbability = p.SpecialAttackChancePercent / 100.0;
-
             Level = p.Level;
             CurrentExp = p.CurrentExp;
             ExpToNextLevel = p.ExpToNextLevel;
         }
 
         /// <summary>
-        /// Synchronisiert Meta-Daten wie Coins in die Bindings und aktualisiert Shop-Buttons.
+        /// Synchronisiert Meta-Daten (Coins) in die Bindings und aktualisiert die Shop-Buttons.
         /// </summary>
         private void SyncMetaToUi()
         {
@@ -318,34 +283,26 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Aktiviert oder deaktiviert die Shop-Buttons abhängig von der aktuellen Coin-Anzahl.
-        /// Buttons sind ausgegraut und nicht klickbar, wenn der Spieler sich das Produkt
-        /// nicht leisten kann.
+        /// Aktiviert/Deaktiviert Shop-Buttons abhängig von Coins (ausgegraut, wenn zu teuer).
         /// </summary>
         private void UpdateShopButtonsEnabledState()
         {
             int coins = _engine.Coins;
-
-            // Kosten laut GameEngine:
-            // Attack: 20, MaxHealth: 15, Heal I: 12, Heal II: 20, Poison I: 10, Poison II: 18
-
+            // Preise laut GameEngine: Attack 20, MaxHealth 15, Heal I 12, Heal II 20, Poison I 10, Poison II 18
             AttackUpgradeButton.IsEnabled = coins >= 20;
             HealthUpgradeButton.IsEnabled = coins >= 15;
-
             HealPotion1Button.IsEnabled = coins >= 12;
             HealPotion2Button.IsEnabled = coins >= 20;
-
             PoisonPotion1Button.IsEnabled = coins >= 10;
             PoisonPotion2Button.IsEnabled = coins >= 18;
         }
 
         /// <summary>
-        /// Synchronisiert die Enemy-Box anhand des aktuell ausgewählten Gegners.
+        /// Synchronisiert die Enemy-Box auf Basis des aktuell ausgewählten Gegners.
         /// </summary>
         private void SyncCurrentEnemyToUi()
         {
             var enemy = SelectedEnemy;
-
             if (enemy == null)
             {
                 CurrentEnemyName = string.Empty;
@@ -354,7 +311,6 @@ namespace RpgWpf
                 CurrentEnemyAttack = 0;
                 return;
             }
-
             CurrentEnemyName = enemy.Name;
             CurrentEnemyHP = enemy.HP;
             CurrentEnemyMaxHP = enemy.MaxHP;
@@ -362,48 +318,56 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Aktualisiert die Inventar-Anzeige auf Basis des Inventars aus der Engine.
+        /// Aktualisiert die Inventar-Anzeige anhand des Inventars aus der Engine.
         /// </summary>
         private void SyncInventoryToUi()
         {
             var inv = _engine.Player.Inventar;
             InventoryUsed = inv.UsedSize;
             InventoryMax = inv.MaxSize;
-
-            var items = inv.Snapshot();
-            InventoryItems = items;
+            InventoryItems = inv.Snapshot();
         }
 
         /// <summary>
-        /// Hängt Text an das GameLog-Textfeld an (sichtbarer Game-Log in der UI).
+        /// Hängt Text an den GameLog-TextBox an (sichtbarer Spiele-Log).
+        /// Fügt bei Bedarf automatisch einen Zeilenumbruch an und scrollt nach unten.
         /// </summary>
         private void AppendLog(string text)
         {
-            if (string.IsNullOrWhiteSpace(text))
-                return;
-
+            if (string.IsNullOrWhiteSpace(text)) return;
             GameLog.AppendText(text);
             if (!text.EndsWith(Environment.NewLine))
             {
                 GameLog.AppendText(Environment.NewLine);
             }
-
             GameLog.ScrollToEnd();
+        }
+
+        /// <summary>
+        /// Aktualisiert alle anzeigerelevanten UI-Elemente (Charakter, Gegner, Meta, Inventar).
+        /// </summary>
+        private void RefreshUI()
+        {
+            // Alle Datenfelder aus Engine in UI-Properties übertragen
+            SyncCharacterToUi();
+            SyncCurrentEnemyToUi();
+            SyncMetaToUi();
+            SyncInventoryToUi();
+            // Listen manuell aktualisieren (Werte können sich geändert haben)
+            EnemiesList.Items.Refresh();
+            InventoryList.Items.Refresh();
         }
 
         // ============================
         //   INotifyPropertyChanged
         // ============================
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
+        public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         // ============================
         //   Button-Handler (Kampf / Admin)
         // ============================
-
         /// <summary>
         /// Führt einen Angriff auf den aktuell ausgewählten Gegner aus.
         /// </summary>
@@ -420,27 +384,18 @@ namespace RpgWpf
             }
 
             string kampfText = _engine.Attack(SelectedEnemy);
-
-            // Kampfprotokoll in den Game-Log schreiben
-            AppendLog(string.Empty);
             AppendLog($"--- Kampf gegen {SelectedEnemy.Name} ---");
             AppendLog(kampfText);
 
             // UI nach dem Kampf aktualisieren
-            SyncCharacterToUi();
-            SyncCurrentEnemyToUi();
-            SyncMetaToUi();
-            SyncInventoryToUi();
+            RefreshUI();
 
-            // Listen neu zeichnen
-            EnemiesList.Items.Refresh();
-            InventoryList.Items.Refresh();
-
-            // Niederlage-Popup anzeigen, falls der Spieler gestorben ist
+            // Hinweis-Popup anzeigen, falls der Spieler gestorben ist
             if (kampfText.Contains("Du wurdest besiegt."))
             {
                 MessageBox.Show(
-                    "Der Charakter ist gestorben. Coins und Inventar wurden gelöscht.\nDer Neustart erfolgt mit vollen HP.",
+                    "Der Charakter ist gestorben. Coins und Inventar wurden gelöscht.\n" +
+                    "Ein Neustart erfolgt mit vollen HP.",
                     "Niederlage",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -450,13 +405,11 @@ namespace RpgWpf
         /// <summary>
         /// Verwendet das aktuell im Inventar ausgewählte Item.
         /// HealPotion wirkt auf den Charakter, PoisonPotion auf den ausgewählten Gegner.
-        /// Bei Potions werden nur Fehler per Popup angezeigt, Erfolge landen nur im Log.
+        /// Bei Potions werden nur Fehler per Popup angezeigt, Erfolge nur im Log.
         /// </summary>
         private void UsePotionButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedItem = InventoryList.SelectedItem as IInventarItem;
-
-            if (selectedItem == null)
+            if (InventoryList.SelectedItem is not IInventarItem selectedItem)
             {
                 MessageBox.Show(
                     "Es ist kein Item im Inventar ausgewählt.",
@@ -468,35 +421,15 @@ namespace RpgWpf
 
             var target = SelectedEnemy;
             string result = _engine.UseInventoryItem(selectedItem, target);
-
-            // Log-Eintrag und UI-Update
             AppendLog($"[Item] {result}");
 
-            SyncCharacterToUi();
-            SyncCurrentEnemyToUi();
-            SyncMetaToUi();
-            SyncInventoryToUi();
+            // UI nach Item-Nutzung aktualisieren
+            RefreshUI();
 
-            EnemiesList.Items.Refresh();
-            InventoryList.Items.Refresh();
-
-            // Nur bei Fehlern (oder bei Nicht-Potion-Items) ein Popup anzeigen
-            bool isPotion =
-                selectedItem is HealPotion ||
-                selectedItem is PoisonPotion;
-
-            // Fehlertexte enthalten typischerweise eines dieser Wörter
-            bool isErrorResult =
-                result.Contains("kein") ||
-                result.Contains("nicht") ||
-                result.Contains("konnte") ||
-                result.Contains("hatte keinen Effekt");
-
-            // Potions:
-            //   - Erfolg → kein Popup
-            //   - Fehler → Popup (Warning)
-            // Sonstige Items:
-            //   - behalten das bisherige Verhalten (Popup in jedem Fall)
+            // Bei bestimmten Fällen (fehlgeschlagen oder Nicht-Trank) Popup anzeigen
+            bool isPotion = selectedItem is HealPotion || selectedItem is PoisonPotion;
+            bool isErrorResult = result.Contains("kein") || result.Contains("nicht") ||
+                                  result.Contains("konnte") || result.Contains("hatte keinen Effekt");
             if (!isPotion || isErrorResult)
             {
                 MessageBox.Show(
@@ -508,12 +441,12 @@ namespace RpgWpf
         }
 
         /// <summary>
-        /// Öffnet ein separates Admin-Menü
+        /// Öffnet das Admin-Fenster (nur für Admin-Spieler sichtbar).
         /// Während das Admin-Fenster geöffnet ist, wird die HP-Regeneration pausiert.
         /// </summary>
         private void AdminMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            // Sicherheitscheck – sollte durch Sichtbarkeit des Buttons bereits abgedeckt sein
+            // Sicherheitscheck (sollte durch Sichtbarkeit bereits sichergestellt sein)
             if (!_engine.Player.IsAdmin)
             {
                 MessageBox.Show(
@@ -524,37 +457,27 @@ namespace RpgWpf
                 return;
             }
 
-            // HP-Regeneration pausieren, solange das Admin-Fenster offen ist
+            // HP-Regeneration pausieren, solange Admin-Fenster offen ist
             _hpRegenTimer?.Stop();
 
             try
             {
-                // Admin-Fenster öffnen
-                var adminWindow = new AdminWindow(_engine)
-                {
-                    Owner = this
-                };
-
+                // Admin-Fenster öffnen (Modal)
+                var adminWindow = new AdminWindow(_engine) { Owner = this };
                 adminWindow.ShowDialog();
             }
             finally
             {
-                // Nach Schließen des Admin-Fensters die HP-Regeneration wieder starten
+                // Nach Schließen des Admin-Fensters HP-Regeneration fortsetzen
                 _hpRegenTimer?.Start();
             }
 
-            // Nach Schließen des Admin-Fensters die Haupt-UI aktualisieren
-            SyncCharacterToUi();
-            SyncMetaToUi();
-            SyncInventoryToUi();
-            SyncCurrentEnemyToUi();
-
-            EnemiesList.Items.Refresh();
-            InventoryList.Items.Refresh();
+            // Haupt-UI nach Admin-Änderungen aktualisieren
+            RefreshUI();
         }
 
         /// <summary>
-        /// Beendet die Anwendung. Später kann hier eine Bestätigungsabfrage ergänzt werden.
+        /// Beendet die Anwendung.
         /// </summary>
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
@@ -564,7 +487,6 @@ namespace RpgWpf
         // ============================
         //   Shop-Button-Handler
         // ============================
-
         /// <summary>
         /// Kauft ein Attack-Upgrade (+2 Damage) für 20 Coins.
         /// </summary>
@@ -572,161 +494,142 @@ namespace RpgWpf
         {
             const int cost = 20;
             const double increase = 2.0;
-
             bool success = _engine.TryBuyAttackUpgrade(cost, increase, out string message);
 
             AppendLog("[Shop] " + message);
-
-            // Bei Erfolg Character-Werte und Coins aktualisieren
             if (success)
             {
+                // Angriff und Coins haben sich geändert
                 SyncCharacterToUi();
                 SyncInventoryToUi();
                 SyncMetaToUi();
             }
-
             else
             {
                 MessageBox.Show(
                     message,
-                    "Shop – Attack upgrade",
+                    "Shop – Attack Upgrade",
                     MessageBoxButton.OK,
-                    success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                    MessageBoxImage.Warning);
             }
         }
 
         /// <summary>
         /// Kauft ein Max-Health-Upgrade (+20 MaxHP) für 15 Coins.
-        /// MaxHP und aktuelle HP werden in der Engine angepasst.
         /// </summary>
         private void BuyHealthButton_Click(object sender, RoutedEventArgs e)
         {
             const int cost = 15;
-            const double hpIncrease = 20.0; // Aufwertung der MaxHP
-
+            const double hpIncrease = 20.0;
             bool success = _engine.TryBuyMaxHealthUpgrade(cost, hpIncrease, out string message);
 
             AppendLog("[Shop] " + message);
-
             if (success)
             {
-                // MaxHP und aktuelle HP haben sich geändert → Character-UI aktualisieren
+                // MaxHP und aktuelle HP haben sich geändert
                 SyncCharacterToUi();
                 SyncInventoryToUi();
                 SyncMetaToUi();
             }
-
             else
             {
                 MessageBox.Show(
-                message,
-                "Shop – Max health upgrade",
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                    message,
+                    "Shop – Max Health Upgrade",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }
         }
 
         /// <summary>
-        /// Kauft eine HealPotion Stufe 1 und fügt sie dem Inventar hinzu.
+        /// Kauft eine Heal Potion Stufe 1 (für 12 Coins) und fügt sie dem Inventar hinzu.
         /// </summary>
         private void BuyHealPotion1Button_Click(object sender, RoutedEventArgs e)
         {
             bool success = _engine.TryBuyHealPotion(1, out string message);
-
             AppendLog("[Shop] " + message);
-
             if (success)
             {
                 SyncMetaToUi();
                 SyncInventoryToUi();
                 InventoryList.Items.Refresh();
             }
-
             else
             {
                 MessageBox.Show(
-                message,
-                "Shop – Heal Potion I",
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                    message,
+                    "Shop – Heal Potion I",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }
         }
 
         /// <summary>
-        /// Kauft eine HealPotion Stufe 2 und fügt sie dem Inventar hinzu.
+        /// Kauft eine Heal Potion Stufe 2 (für 20 Coins) und fügt sie dem Inventar hinzu.
         /// </summary>
         private void BuyHealPotion2Button_Click(object sender, RoutedEventArgs e)
         {
             bool success = _engine.TryBuyHealPotion(2, out string message);
-
             AppendLog("[Shop] " + message);
-
             if (success)
             {
                 SyncMetaToUi();
                 SyncInventoryToUi();
                 InventoryList.Items.Refresh();
             }
-
             else
             {
                 MessageBox.Show(
-                message,
-                "Shop – Heal Potion II",
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                    message,
+                    "Shop – Heal Potion II",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }
         }
 
         /// <summary>
-        /// Kauft eine PoisonPotion Stufe 1 und fügt sie dem Inventar hinzu.
+        /// Kauft eine Poison Potion Stufe 1 (für 10 Coins) und fügt sie dem Inventar hinzu.
         /// </summary>
         private void BuyPoisonPotion1Button_Click(object sender, RoutedEventArgs e)
         {
             bool success = _engine.TryBuyPoisonPotion(1, out string message);
-
             AppendLog("[Shop] " + message);
-
             if (success)
             {
                 SyncMetaToUi();
                 SyncInventoryToUi();
                 InventoryList.Items.Refresh();
             }
-
             else
             {
                 MessageBox.Show(
-                message,
-                "Shop – Poison Potion I",
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                    message,
+                    "Shop – Poison Potion I",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }
         }
 
         /// <summary>
-        /// Kauft eine PoisonPotion Stufe 2 und fügt sie dem Inventar hinzu.
+        /// Kauft eine Poison Potion Stufe 2 (für 18 Coins) und fügt sie dem Inventar hinzu.
         /// </summary>
         private void BuyPoisonPotion2Button_Click(object sender, RoutedEventArgs e)
         {
             bool success = _engine.TryBuyPoisonPotion(2, out string message);
-
             AppendLog("[Shop] " + message);
-
             if (success)
             {
                 SyncMetaToUi();
                 SyncInventoryToUi();
                 InventoryList.Items.Refresh();
             }
-
             else
             {
                 MessageBox.Show(
-                message,
-                "Shop – Poison Potion II",
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                    message,
+                    "Shop – Poison Potion II",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }
         }
     }
